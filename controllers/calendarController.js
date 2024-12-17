@@ -1,8 +1,6 @@
 const { oauth2Client, calendarService } = require('../services/googleAuthService');
 
 
-console.log('CLIENT_ID OAUTH:', oauth2Client._clientId);
-
 
 
 exports.auth =  (req, res) => {
