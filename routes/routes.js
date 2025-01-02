@@ -7,6 +7,10 @@ const router = express.Router();
 router.get('/auth', calendarController.auth);
 router.get('/authRedirect', calendarController.authRedirect);
 router.get('/calendars', calendarController.listCalendars);
-router.get('/events', calendarController.listEvents);
+router.get('/getCitas/:calendarId', calendarController.obtenerCitasDeCalendarioPorId);
+router.post('/crearEvento/:calendarId', calendarController.crearEvento);
+router.get('/getAvailableSlots/:calendarId',calendarController.getAvailableSlots);
+
+
 
 module.exports = router;
