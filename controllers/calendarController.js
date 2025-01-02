@@ -1,7 +1,7 @@
 const { oauth2Client, calendarService } = require('../services/googleAuthService');
 const refreshTokenService = require('../services/refreshTokenService');
 
-const email = 'jrrdl1506mx@gmail.com'; 
+const email = 'arcedental4@gmail.com'; 
 
 exports.auth =  (req, res) => {
   // Generate the Google authentication URL
