@@ -153,13 +153,13 @@ exports.obtenerCitasDeCalendarioPorId = async (req, res) => {
 
 // CONFUGRACIONES PARA CHECAR SI HAY DIAS OCUPADOS
 /*
-0: Domingo
-1: Lunes
-2: Martes
-3: Miércoles
-4: Jueves
-5: Viernes
-6: Sábado
+6: Domingo
+0: Lunes
+1: Martes
+2: Miércoles
+3: Jueves
+4: Viernes
+5: Sábado
 */
 
 
@@ -170,6 +170,10 @@ const calculateWeekRange = (rangeConfig) => {
   // Calcular el inicio de la semana (domingo anterior o hoy si es domingo)
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - dayOfWeek);
+  
+  console.log("Hoy:", today.toISOString().split("T")[0]);
+  console.log("Día de la semana (hoy):", dayOfWeek);
+  console.log("Inicio de la semana (domingo):", startOfWeek.toISOString().split("T")[0]);
 
   let endOfRange;
 
@@ -193,6 +197,9 @@ const calculateWeekRange = (rangeConfig) => {
       throw new Error("Configuración de rango no válida");
   }
 
+  console.log("Fin del rango:", endOfRange.toISOString().split("T")[0]);
+
+
   return {
     start: startOfWeek.toISOString().split("T")[0], // Fecha de inicio en formato YYYY-MM-DD
     end: endOfRange.toISOString().split("T")[0]     // Fecha de fin en formato YYYY-MM-DD
@@ -200,7 +207,7 @@ const calculateWeekRange = (rangeConfig) => {
 };
 
 const config = {
-  daysOfWeek: [2, 4],
+  daysOfWeek: [1, 3],
   timeRange: { start: "08:00", end: "20:00" }, // Horario: de 8:00 AM a 8:00 PM
   dateRange: calculateWeekRange("1 semana")  // Rango de fechas
 };
@@ -233,7 +240,9 @@ const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) =>
   // Generar fechas en el rango especificado
   for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
     const dayOfWeek = date.getDay(); // Obtener el día de la semana (0-6)
-
+    console.log(dayOfWeek, "Los dias disponibles son 2 y 4");
+    console.log(date.toISOString().split("T")[0], "es el dia que se va a checar");
+    // console.log(dayOfWeek,"El dia que se va a checar");
     // Comprobar si el día actual está en el array de días disponibles
     if (daysOfWeek.includes(dayOfWeek)) {
       const dateStr = date.toISOString().split("T")[0];
