@@ -35,4 +35,7 @@ router.put('/doctor/:id', doctorController.actualizarDoctor);
 router.delete('/doctor/:id', doctorController.eliminarDoctor);
 
 
+router.post('/addPaciente');
+
+
 module.exports = router;

@@ -1,5 +1,7 @@
 const { oauth2Client, calendarService } = require('../services/googleAuthService');
 const refreshTokenService = require('../services/refreshTokenService');
+const filtrosDrArceService = require('../services/filtrosDrArceService');
+
 
 const email = 'arcedental4@gmail.com'; 
 
@@ -150,6 +152,32 @@ exports.obtenerCitasDeCalendarioPorId = async (req, res) => {
 
 
 
+// Buscar horarios disponibles
+exports.getAvailableSlots = async (req, res) => {
+  try {
+    const { daysOfWeek, timeRange, dateRange } = config;
+    await setAuthCredentials(email);
+
+    const calendarId = req.params.calendarId + "@group.calendar.google.com"; // Obtén el ID del calendario desde los parámetros de la ruta.
+
+    const busyEvents = await getBusyEvents(
+      calendarId,
+      new Date(dateRange.start).toISOString(),
+      new Date(dateRange.end).toISOString()
+    );
+    console.log("Eventos ocupados:", busyEvents);
+
+    const availableSlots = generateAvailableSlots(daysOfWeek, timeRange, dateRange, busyEvents);
+    const filtroOperatorios = filtrosDrArceService.filterSlotsByRules(availableSlots);
+    const fechasMasCercanas = filtrosDrArceService.getEarliestSlots(filtroOperatorios);
+    res.json(fechasMasCercanas);
+  } catch (error) {
+    console.error('Error al obtener horarios disponibles:', error);
+    res.status(500).send('Error al obtener horarios disponibles');
+  }
+};
+
+
 
 // CONFUGRACIONES PARA CHECAR SI HAY DIAS OCUPADOS
 /*
@@ -171,9 +199,9 @@ const calculateWeekRange = (rangeConfig) => {
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - dayOfWeek);
   
-  console.log("Hoy:", today.toISOString().split("T")[0]);
-  console.log("Día de la semana (hoy):", dayOfWeek);
-  console.log("Inicio de la semana (domingo):", startOfWeek.toISOString().split("T")[0]);
+  // console.log("Hoy:", today.toISOString().split("T")[0]);
+  // console.log("Día de la semana (hoy):", dayOfWeek);
+  // console.log("Inicio de la semana (domingo):", startOfWeek.toISOString().split("T")[0]);
 
   let endOfRange;
 
@@ -207,8 +235,8 @@ const calculateWeekRange = (rangeConfig) => {
 };
 
 const config = {
-  daysOfWeek: [1, 3],
-  timeRange: { start: "08:00", end: "20:00" }, // Horario: de 8:00 AM a 8:00 PM
+  daysOfWeek: [1,2,3],
+  timeRange: { start: "10:00", end: "20:00" }, // Horario: de 8:00 AM a 8:00 PM
   dateRange: calculateWeekRange("1 semana")  // Rango de fechas
 };
 
@@ -228,40 +256,66 @@ const getBusyEvents = async (calendarId, timeMin, timeMax) => {
   }));
 };
 
-// Función para generar horarios disponibles
+
+const incrementTime = (time, incrementMinutes) => {
+  const [hour, minute] = time.split(":").map(Number);
+  const totalMinutes = hour * 60 + minute + incrementMinutes;
+  const newHour = Math.floor(totalMinutes / 60);
+  const newMinute = totalMinutes % 60;
+  return `${newHour.toString().padStart(2, "0")}:${newMinute.toString().padStart(2, "0")}`;
+};
+
+// Función para generar horarios disponibles con bloques de 45 minutos
+// Función para generar horarios disponibles con bloques de 45 minutos
 const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) => {
   const { start, end } = dateRange;
   const { start: startTime, end: endTime } = timeRange;
 
   const startDate = new Date(start);
   const endDate = new Date(end);
-  const availableSlots = [];
+  const availableSlots = {};
+
+  const dayNames = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado","domingo" ];
 
   // Generar fechas en el rango especificado
   for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
     const dayOfWeek = date.getDay(); // Obtener el día de la semana (0-6)
-    console.log(dayOfWeek, "Los dias disponibles son 2 y 4");
-    console.log(date.toISOString().split("T")[0], "es el dia que se va a checar");
-    // console.log(dayOfWeek,"El dia que se va a checar");
+
     // Comprobar si el día actual está en el array de días disponibles
     if (daysOfWeek.includes(dayOfWeek)) {
+      const dayName = dayNames[dayOfWeek]; // Nombre del día
       const dateStr = date.toISOString().split("T")[0];
       let timeCursor = startTime;
 
-      // Generar bloques horarios
+      // Inicializar el array de horarios para este día
+      if (!availableSlots[dayName]) {
+        availableSlots[dayName] = [];
+      }
+
+      // Generar bloques horarios de 45 minutos
       while (timeCursor < endTime) {
-        const nextTime = incrementTime(timeCursor, 1); // Bloques de 1 hora
-        const slotStart = new Date(`${dateStr}T${timeCursor}:00Z`);
-        const slotEnd = new Date(`${dateStr}T${nextTime}:00Z`);
+        const nextTime = incrementTime(timeCursor, 45); // Bloques de 45 minutos
+        const slotStart = `${dateStr}T${timeCursor}:00Z`;
+        const slotEnd = `${dateStr}T${nextTime}:00Z`;
 
         // Verificar si el bloque está ocupado
-        const isBusy = busyEvents.some(event =>
-          (slotStart >= new Date(event.start) && slotStart < new Date(event.end)) ||
-          (slotEnd > new Date(event.start) && slotEnd <= new Date(event.end))
-        );
+        const isBusy = busyEvents.some(event => {
+          const eventStart = event.start;
+          const eventEnd = event.end;
+
+          return (
+            (slotStart >= eventStart && slotStart < eventEnd) || // Comienza dentro del evento
+            (slotEnd > eventStart && slotEnd <= eventEnd) ||    // Termina dentro del evento
+            (slotStart <= eventStart && slotEnd >= eventEnd)    // Envuelve completamente el evento
+          );
+        });
 
         if (!isBusy) {
-          availableSlots.push({ date: dateStr, start: timeCursor, end: nextTime });
+          availableSlots[dayName].push({
+            date: dateStr, // Fecha del horario disponible
+            start: timeCursor,
+            end: nextTime,
+          });
         }
 
         timeCursor = nextTime;
@@ -272,32 +326,13 @@ const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) =>
   return availableSlots;
 };
 
-// Función para incrementar el tiempo (en horas)
-const incrementTime = (time, increment) => {
-  const [hour, minute] = time.split(":").map(Number);
-  const newHour = hour + increment;
-  return `${newHour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
-};
 
-// Endpoint principal
-exports.getAvailableSlots = async (req, res) => {
-  try {
-    const { daysOfWeek, timeRange, dateRange } = config;
-    await setAuthCredentials(email);
 
-    const calendarId = req.params.calendarId + "@group.calendar.google.com"; // Obtén el ID del calendario desde los parámetros de la ruta.
 
-    const busyEvents = await getBusyEvents(
-      calendarId,
-      new Date(dateRange.start).toISOString(),
-      new Date(dateRange.end).toISOString()
-    );
 
-    const availableSlots = generateAvailableSlots(daysOfWeek, timeRange, dateRange, busyEvents);
 
-    res.json(availableSlots);
-  } catch (error) {
-    console.error('Error al obtener horarios disponibles:', error);
-    res.status(500).send('Error al obtener horarios disponibles');
-  }
-};
+
+
+
+
+
