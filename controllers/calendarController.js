@@ -273,9 +273,9 @@ const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) =>
 
   const startDate = new Date(start);
   const endDate = new Date(end);
-  const availableSlots = {};
+  const availableSlots = []; // Cambiar a un array en lugar de un objeto
 
-  const dayNames = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado","domingo" ];
+  const dayNames = ["lunes", "martes", "miercoles", "jueves", "viernes", "sábado","domingo"];
 
   // Generar fechas en el rango especificado
   for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
@@ -286,11 +286,6 @@ const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) =>
       const dayName = dayNames[dayOfWeek]; // Nombre del día
       const dateStr = date.toISOString().split("T")[0];
       let timeCursor = startTime;
-
-      // Inicializar el array de horarios para este día
-      if (!availableSlots[dayName]) {
-        availableSlots[dayName] = [];
-      }
 
       // Generar bloques horarios de 45 minutos
       while (timeCursor < endTime) {
@@ -311,10 +306,12 @@ const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) =>
         });
 
         if (!isBusy) {
-          availableSlots[dayName].push({
+          availableSlots.push({
+            index: availableSlots.length + 1, // Índice numérico
+            day: dayName, // Día de la semana
             date: dateStr, // Fecha del horario disponible
-            start: timeCursor,
-            end: nextTime,
+            start: timeCursor, // Hora de inicio
+            end: nextTime, // Hora de fin
           });
         }
 
