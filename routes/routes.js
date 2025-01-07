@@ -4,6 +4,7 @@ const  calendarController  = require('../controllers/calendarController');
 const usuarioController = require('../controllers/usuariosController');
 const citasController = require('../controllers/citasController');
 const doctorController = require('../controllers/doctorController');
+const pacienteController = require ('../controllers/pacienteController');
 
 
 
@@ -34,6 +35,11 @@ router.get('/doctor/:id', doctorController.obtenerDoctorPorId);
 router.put('/doctor/:id', doctorController.actualizarDoctor);
 router.delete('/doctor/:id', doctorController.eliminarDoctor);
 
+router.post('/paciente', pacienteController.crearPaciente);
+router.get('/pacientes', pacienteController.obtenerPacientes);
+router.get('/paciente/:id', pacienteController.obtenerPacientePorId);
+router.put('/paciente/:id', pacienteController.actualizarPaciente);
+router.delete('/paciente/:id', pacienteController.eliminarPaciente);
 
 router.post('/addPaciente');
 
