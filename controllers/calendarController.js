@@ -178,6 +178,112 @@ exports.getAvailableSlots = async (req, res) => {
 };
 
 
+exports.crearCitaCV = async (req, res) => {
+  try {
+    await setAuthCredentials(email); // Establece las credenciales de autenticación
+    const calendarId1 = req.params.calendarId1 + "@group.calendar.google.com"; // ID del primer calendario
+    const calendarId2 = req.params.calendarId2 + "@group.calendar.google.com"; // ID del segundo calendario
+    
+    const { summary, description, startDateTime, endDateTime } = req.body; // Datos del evento
+
+    if (!calendarId1 || !calendarId2 || !summary || !startDateTime || !endDateTime) {
+      return res.status(400).json({ error: 'Faltan datos requeridos para crear el evento.' });
+    }
+
+    // Formato esperado para el primer evento
+    const event1 = {
+      summary: summary, // Título del evento
+      description: description, // Descripción
+      start: {
+        dateTime: startDateTime, // Fecha y hora de inicio (en formato ISO)
+        timeZone: 'America/Mexico_City', // Establece la zona horaria, ajusta según sea necesario
+      },
+      end: {
+        dateTime: endDateTime, // Fecha y hora de fin (en formato ISO)
+        timeZone: 'America/Mexico_City', // Establece la zona horaria
+      },
+    };
+
+    // Crear el primer evento en el primer calendario
+    calendarService.events.insert(
+      {
+        calendarId: calendarId1, // ID del primer calendario
+        resource: event1, // Datos del primer evento
+      },
+      (err, createdEvent1) => {
+        if (err) {
+          console.error('Error al crear el primer evento:', err);
+          return res.status(500).json({ error: 'No se pudo crear el primer evento.' });
+        }
+
+        // Calcular el tiempo de inicio y fin del segundo evento
+        const secondEventStart = new Date(new Date(endDateTime).getTime());
+        secondEventStart.setMinutes(secondEventStart.getMinutes()); // El segundo evento empieza 1 minuto después del primer evento
+
+        // Crear el segundo evento en el segundo calendario
+        const secondEventEnd = new Date(secondEventStart.getTime());
+        secondEventEnd.setMinutes(secondEventEnd.getMinutes() + 45); // Duración de 45 minutos
+
+        const event2 = {
+          summary: "Reunión subsecuente", // Título del segundo evento
+          description: "Evaluación del progreso", // Descripción del segundo evento
+          start: {
+            dateTime: secondEventStart.toISOString(), // Fecha y hora de inicio del segundo evento
+            timeZone: 'America/Mexico_City', // Zona horaria
+          },
+          end: {
+            dateTime: secondEventEnd.toISOString(), // Fecha y hora de fin del segundo evento
+            timeZone: 'America/Mexico_City', // Zona horaria
+          },
+        };
+
+        // Crear el segundo evento en el segundo calendario
+        calendarService.events.insert(
+          {
+            calendarId: calendarId2, // ID del segundo calendario
+            resource: event2, // Datos del segundo evento
+          },
+          (err, createdEvent2) => {
+            if (err) {
+              console.error('Error al crear el segundo evento:', err);
+              return res.status(500).json({ error: 'No se pudo crear el segundo evento.' });
+            }
+            
+            res.status(201).json({
+              message: 'Eventos creados exitosamente',
+              event1: createdEvent1.data,
+              event2: createdEvent2.data,
+            });
+          }
+        );
+      }
+    );
+  } catch (error) {
+    console.error('Error al asignar el evento:', error);
+    res.status(500).send('Error al configurar las credenciales');
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // CONFUGRACIONES PARA CHECAR SI HAY DIAS OCUPADOS
 /*
