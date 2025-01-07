@@ -34,6 +34,11 @@ router.get('/doctor/:id', doctorController.obtenerDoctorPorId);
 router.put('/doctor/:id', doctorController.actualizarDoctor);
 router.delete('/doctor/:id', doctorController.eliminarDoctor);
 
+router.post('/paciente', pacienteController.crearPaciente);
+router.get('/pacientes', pacienteController.obtenerPacientes);
+router.get('/paciente/:id', pacienteController.obtenerPacientePorId);
+router.put('/paciente/:id', pacienteController.actualizarPaciente);
+router.delete('/paciente/:id', pacienteController.eliminarPaciente);
 
 router.post('/addPaciente');
 

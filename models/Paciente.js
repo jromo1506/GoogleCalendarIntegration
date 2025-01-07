@@ -1,46 +1,46 @@
 const mongoose = require('mongoose');
 
 const PacienteSchema = new mongoose.Schema({
-    email: {
+    nombre: {
         type: String,
         required: true,
         unique: true
     },
-
-    nombrePac: { //nombre paciente
+    telefonoWhatsapp: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
-
-    telefono: {
-        type: Number,
-        required: true
-    },
-    nombreAge: { //nombre de quien agenda la cita
-        type: String,
-        required: true
-    },
-    fechNac: {
-        type: Date,
-        required: true
-    },
-    apodo: {
-        type: String,
-        required: true
-    },
-    condicion: { //condicion medica actual
-        type: String,
-        required: true
-    },
-    motivo: { //motivo de la consulta
-        type: String,
-        required: true
-    },
-    turno: {
+    nombreReferido: {
         type: String,
         required: true
     },
     horario: {
+        type: String,
+        required: true
+    },
+    nombreCompleto: {
+        type: String,
+        required: true
+    },
+    fechaNac: {
+        type: Date,
+        required: true
+    },
+    correoElectronico: { //condicion medica actual
+        type: String,
+        required: true,
+        match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    },
+    apodo: { //motivo de la consulta
+        type: String,
+        required: true
+    },
+    condicion: {
+        type: String,
+        required: true
+    },
+    motivoVisita: {
         type: String,
         required: true
     },
@@ -49,5 +49,4 @@ const PacienteSchema = new mongoose.Schema({
 });
 
 const Paciente = mongoose.model('Paciente', PacienteSchema);
-
 module.exports = Paciente;
