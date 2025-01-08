@@ -15,6 +15,7 @@ router.get('/calendars', calendarController.listCalendars);
 router.get('/getCitas/:calendarId', calendarController.obtenerCitasDeCalendarioPorId);
 router.post('/crearEvento/:calendarId', calendarController.crearEvento);
 router.get('/getAvailableSlots/:calendarId',calendarController.getAvailableSlots);
+router.post('/crearCitaCV/:calendarId1/:calendarId2',calendarController.crearCitaCV)
 
 router.post('/user/', usuarioController.crearUsuario);
 router.post('/usuarios/auth', usuarioController.autenticarUsuario);
