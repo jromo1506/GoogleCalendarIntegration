@@ -11,40 +11,6 @@ const PacienteSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    nombreReferido: {
-        type: String,
-        required: true
-    },
-    horario: {
-        type: String,
-        required: true
-    },
-    nombreCompleto: {
-        type: String,
-        required: true
-    },
-    fechaNac: {
-        type: Date,
-        required: true
-    },
-    correoElectronico: { //condicion medica actual
-        type: String,
-        required: true,
-        match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    },
-    apodo: { //motivo de la consulta
-        type: String,
-        required: true
-    },
-    condicion: {
-        type: String,
-        required: true
-    },
-    motivoVisita: {
-        type: String,
-        required: true
-    },
-
 
 });
 
