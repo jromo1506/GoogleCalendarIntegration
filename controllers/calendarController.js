@@ -178,6 +178,7 @@ exports.getAvailableSlots = async (req, res) => {
 };
 
 
+// Genera la cita escalonada
 exports.crearCitaCV = async (req, res) => {
   try {
     await setAuthCredentials(email); // Establece las credenciales de autenticación
