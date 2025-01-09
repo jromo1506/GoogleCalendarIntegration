@@ -3,13 +3,14 @@ const {Schema} = mongoose;
 
 const CitasSchema = new Schema({
     
-    doctor: {
+
+    tratamiento: {
         type: String,
         required: true,
     },
-    nombre: {
-        type: String,
-        required: false,
+    fecha:{
+        type:Date,
+        required:true
     },
     hora_inicio: {
         type: String,
@@ -19,12 +20,13 @@ const CitasSchema = new Schema({
         type: String,
         required: false,
     },
-    color: {
-        type: String,
-        required: false,
+    observaciones:{
+        type:String,
+        required:false,
     },
-    nota:{
-        type: String,
+    realizo:{
+        type:String,
+        required:false
     }
 });
 

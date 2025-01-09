@@ -11,10 +11,6 @@ const UsuarioSchema = new Schema({
         type: String,
         required: true
     },
-    tipo: {
-        type: String,
-        required: true
-    },
     nombre: {
         type: String,
         required: true
@@ -35,9 +31,15 @@ const UsuarioSchema = new Schema({
         type: String,
         required: true
     },
-    especialidad: {
+    
+    tipo: {
         type: String,
         required: true
+    },
+    //Si el tipo es doctor
+    especialidad: {
+        type: String,
+        required: false
     },
 });
 

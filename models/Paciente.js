@@ -11,7 +11,81 @@ const PacienteSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    
+    nombreReferido: {
+        type: String,
+        required: true,
+    },
+    horario: {
+        type: String,
+        required: true,
+    },
+    apeM: {
+        type: String,
+        required: true,
+    },
+    apeP: {
+        type: String,
+        required: true,
+    },
+    genero:{
+        type:String,
+        required:true
+    },
+    fechaNac: {
+        type:Date,
+        required:true
+    },
+    correoElectronico: {
+        type:Date,
+        required:true
+    },
+    apodo: {
+        type: String,
+        required: true,
+    },
+    condicion: {
+        type: String,
+        required: true,
+    },
+    motivoVisita: {
+        type: String,
+        required: true,
+    },
+    nombreTutor:{
+        type:String,
+        required:false,
+    },
 
+    altura:{
+        type:String,
+        required:false,
+    },
+    peso:{
+        type:String,
+        required:false,
+    },
+    direccion:{
+        type:String,
+        required:false
+    },
+   
+
+
+    // Datos complementarios front end
+    medicamentos:{
+        type:String,
+        required:false
+    },
+    alergias:{
+        type:String,
+        required:false
+    },
+    idDoctor:{
+        type:String,
+        required:false
+    }
+    
 });
 
 const Paciente = mongoose.model('Paciente', PacienteSchema);
