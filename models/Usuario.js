@@ -11,14 +11,34 @@ const UsuarioSchema = new Schema({
         type: String,
         required: true
     },
-    tipoUsuario: {
+    tipo: {
+        type: String,
+        required: true
+    },
+    nombre: {
+        type: String,
+        required: true
+    },
+    apeP: {
+        type: String,
+        required: true
+    },
+    apeM: {
         type: String,
         required: false,
     },
     telefono:{
         type: Number,
         required: true
-    }
+    },
+    correo: {
+        type: String,
+        required: true
+    },
+    especialidad: {
+        type: String,
+        required: true
+    },
 });
 
 
