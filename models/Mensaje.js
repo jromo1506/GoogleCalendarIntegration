@@ -6,8 +6,12 @@ const MensajeSchema = new mongoose.Schema({
         type:String,
         required:false
     },
-    mensaje:{
+    telefono:{
         type:String,
+        required:false,
+    },
+    mensaje:{
+        type:String,    
         required:false
     },
     // noLeido 
@@ -16,6 +20,10 @@ const MensajeSchema = new mongoose.Schema({
     // urgente
     estado:{
         type:String,
+        required:true
+    },
+    fecha:{
+        type:Date,
         required:true
     }
     
