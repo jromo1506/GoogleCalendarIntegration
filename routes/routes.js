@@ -3,11 +3,6 @@ const router = express.Router();
 const  calendarController  = require('../controllers/calendarController');
 const usuarioController = require('../controllers/usuariosController');
 const citasController = require('../controllers/citasController');
-<<<<<<< HEAD
-=======
-// const doctorController = require('../controllers/doctorController');
-const pacienteController = require ('../controllers/pacienteController');
->>>>>>> 880b1fff363c16209bb4954e65e2e504936e663f
 
 const pacienteController = require ('../controllers/pacienteController');
 const mensajeController = require ('../controllers/mensajeController');
@@ -35,14 +30,6 @@ router.get('/citas/:id', citasController.obtenerCitaPorId);
 router.put('/citas/:id', citasController.actualizarCita);
 router.delete('/citas/:id', citasController.eliminarCita);
 
-<<<<<<< HEAD
-=======
-// router.post('/doctor', doctorController.crearDoctor);
-// router.get('/doctor', doctorController.obtenerDoctores);
-// router.get('/doctor/:id', doctorController.obtenerDoctorPorId);
-// router.put('/doctor/:id', doctorController.actualizarDoctor);
-// router.delete('/doctor/:id', doctorController.eliminarDoctor);
->>>>>>> 880b1fff363c16209bb4954e65e2e504936e663f
 
 router.post('/paciente', pacienteController.crearPaciente);
 router.get('/pacientes', pacienteController.obtenerPacientes);
@@ -55,6 +42,7 @@ router.post('/addPaciente');
 
 router.post('/addMensaje',mensajeController.addMensaje);
 router.get('/getMensajes', mensajeController.getMensajes);
+router.post('/getMensajesFiltrados',mensajeController.getMensajesFiltrados);
 router.delete('/deleteMensaje/:id',mensajeController.deleteMensaje);
 
 
