@@ -4,14 +4,15 @@ const PacienteSchema = new mongoose.Schema({
     nombre: {
         type: String,
         required: true,
-        unique: true
     },
     telefonoWhatsapp: {
-        type: String,
+        type: Number,
         required: true,
-        unique: true
     },
-    
+    telefonoPaciente: {
+        type: Number,
+        required: true,
+    },
     nombreReferido: {
         type: String,
         required: true,
@@ -58,11 +59,11 @@ const PacienteSchema = new mongoose.Schema({
     },
 
     altura:{
-        type:String,
+        type:Number,
         required:false,
     },
     peso:{
-        type:String,
+        type:Number,
         required:false,
     },
     direccion:{
