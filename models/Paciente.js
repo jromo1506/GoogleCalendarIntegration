@@ -37,7 +37,7 @@ const PacienteSchema = new mongoose.Schema({
         required:true
     },
     correoElectronico: {
-        type:Date,
+        type: String,
         required:true
     },
     apodo: {
