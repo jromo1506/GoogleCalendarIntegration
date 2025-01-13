@@ -3,7 +3,7 @@ const router = express.Router();
 const  calendarController  = require('../controllers/calendarController');
 const usuarioController = require('../controllers/usuariosController');
 const citasController = require('../controllers/citasController');
-const doctorController = require('../controllers/doctorController');
+// const doctorController = require('../controllers/doctorController');
 const pacienteController = require ('../controllers/pacienteController');
 
 
@@ -30,11 +30,11 @@ router.get('/citas/:id', citasController.obtenerCitaPorId);
 router.put('/citas/:id', citasController.actualizarCita);
 router.delete('/citas/:id', citasController.eliminarCita);
 
-router.post('/doctor', doctorController.crearDoctor);
-router.get('/doctor', doctorController.obtenerDoctores);
-router.get('/doctor/:id', doctorController.obtenerDoctorPorId);
-router.put('/doctor/:id', doctorController.actualizarDoctor);
-router.delete('/doctor/:id', doctorController.eliminarDoctor);
+// router.post('/doctor', doctorController.crearDoctor);
+// router.get('/doctor', doctorController.obtenerDoctores);
+// router.get('/doctor/:id', doctorController.obtenerDoctorPorId);
+// router.put('/doctor/:id', doctorController.actualizarDoctor);
+// router.delete('/doctor/:id', doctorController.eliminarDoctor);
 
 router.post('/paciente', pacienteController.crearPaciente);
 router.get('/pacientes', pacienteController.obtenerPacientes);
