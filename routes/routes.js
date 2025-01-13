@@ -5,7 +5,7 @@ const usuarioController = require('../controllers/usuariosController');
 const citasController = require('../controllers/citasController');
 // const doctorController = require('../controllers/doctorController');
 const pacienteController = require ('../controllers/pacienteController');
-
+const mensajeController = require ('../controllers/mensajeController');
 
 
 // Routes for calendar operations
@@ -30,19 +30,20 @@ router.get('/citas/:id', citasController.obtenerCitaPorId);
 router.put('/citas/:id', citasController.actualizarCita);
 router.delete('/citas/:id', citasController.eliminarCita);
 
-// router.post('/doctor', doctorController.crearDoctor);
-// router.get('/doctor', doctorController.obtenerDoctores);
-// router.get('/doctor/:id', doctorController.obtenerDoctorPorId);
-// router.put('/doctor/:id', doctorController.actualizarDoctor);
-// router.delete('/doctor/:id', doctorController.eliminarDoctor);
 
 router.post('/paciente', pacienteController.crearPaciente);
 router.get('/pacientes', pacienteController.obtenerPacientes);
 router.get('/paciente/:id', pacienteController.obtenerPacientePorId);
 router.put('/paciente/:id', pacienteController.actualizarPaciente);
 router.delete('/paciente/:id', pacienteController.eliminarPaciente);
-
+router.get('/buscarPacientePorTelefono/:telefono',pacienteController.buscarPacientePorNumeroTelefonico);
 router.post('/addPaciente');
+
+
+router.post('/addMensaje',mensajeController.addMensaje);
+router.get('/getMensajes', mensajeController.getMensajes);
+router.delete('/deleteMensaje/:id',mensajeController.deleteMensaje);
+
 
 
 module.exports = router;

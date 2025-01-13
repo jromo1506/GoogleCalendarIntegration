@@ -59,3 +59,19 @@ exports.eliminarPaciente = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al eliminar al paciente', error });
     }
 };
+
+
+exports.buscarPacientePorNumeroTelefonico = async(req,res)=>{
+    try{
+        const numero = req.params.telefono;
+        const paciente = await Paciente.findOne({telefonoWhatsapp:numero});
+        if(!paciente){
+            return res.status(404).json({mensaje:"Paciente no encontrado"})
+        }
+        res.status(200).json(paciente);
+    }
+    catch(error){
+        console.log(error);
+        return res.status(500).json({mensaje:"Error al encontrar pacientes",error:error.message})
+    }
+}
