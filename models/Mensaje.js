@@ -6,6 +6,10 @@ const MensajeSchema = new mongoose.Schema({
         type:String,
         required:false
     },
+    nombrePaciente:{
+        type:String,
+        require:false
+    },
     telefono:{
         type:String,
         required:false,

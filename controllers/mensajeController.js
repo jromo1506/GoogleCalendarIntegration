@@ -1,8 +1,12 @@
 const Mensajes = require('../models/Mensaje');
+const Paciente = require('../models/Paciente')
+
+
+
 // Crear un nuevo mensaje
 exports.addMensaje = async (req, res) => {
     try {
-        const mensaje = new Mensaje(req.body);
+        const mensaje = new Mensajes(req.body);
         const mensajeGuardado = await mensaje.save();
 
         // No tiene sentido este chequeo, porque si `save()` falla, lanzará un error
@@ -22,7 +26,7 @@ exports.addMensaje = async (req, res) => {
 // Obtener todos los mensajes
 exports.getMensajes = async (req, res) => {
     try {
-        const mensajes = await Mensaje.find();
+        const mensajes = await Mensajes.find();
 
         if (!mensajes || mensajes.length === 0) {
             return res.status(404).json({ mensaje: 'No se encontraron mensajes' });
@@ -92,5 +96,57 @@ exports.deleteMensaje = async (req, res) => {
         res.status(200).json({ mensaje: 'Mensaje eliminado correctamente', data: mensajeEliminado });
     } catch (error) {
         res.status(500).json({ mensaje: 'Error al eliminar el mensaje', error: error.message });
+    }
+};
+
+
+
+exports.getMensajesFiltrados = async (req, res) => {
+    try {
+        // Parámetros de consulta
+        const {
+            page = 1, // Número de página (por defecto 1)
+            limit = 10, // Límite de resultados por página (por defecto 10)
+            search = '', // Búsqueda (valor opcional)
+            sortBy = 'createdAt', // Campo para ordenar (por defecto, fecha de creación)
+            sortOrder = 'desc', // Orden (asc o desc, por defecto descendente)
+            estado, // Filtro por estado (opcional)
+        } = req.query;
+
+        // Construir el filtro de búsqueda
+        const filters = {};
+        if (search) {
+            filters.$or = [
+                { telefono: { $regex: search, $options: 'i' } },// Búsqueda insensible a mayúsculas/minúsculas
+                { nombrePaciente: { $regex: search, $options: 'i' } } 
+            ];
+        }
+
+        if (estado) {
+            filters.estado = estado; // Filtrar por estado si se proporciona
+        }
+
+        // Opciones de paginación
+        const options = {
+            skip: (page - 1) * limit, // Saltar los resultados de las páginas anteriores
+            limit: parseInt(limit), // Limitar los resultados devueltos
+            sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 } // Ordenar resultados
+        };
+
+        // Realizar la consulta
+        const mensajes = await Mensajes.find(filters, null, options);
+
+        // Obtener el conteo total de documentos para las páginas
+        const total = await Mensajes.countDocuments(filters);
+
+        res.status(200).json({
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(total / limit),
+            mensajes
+        });
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al obtener los mensajes', error: error.message });
     }
 };
