@@ -117,8 +117,8 @@ exports.getMensajesFiltrados = async (req, res) => {
         const filters = {};
         if (search) {
             filters.$or = [
-                { nombre: { $regex: search, $options: 'i' } }, // Búsqueda por nombre
-                { telefonoWhatsapp: { $regex: search, $options: 'i' } } // Búsqueda por WhatsApp
+                { telefono: { $regex: search, $options: 'i' } },// Búsqueda insensible a mayúsculas/minúsculas
+                { nombrePaciente: { $regex: search, $options: 'i' } } 
             ];
         }
 
