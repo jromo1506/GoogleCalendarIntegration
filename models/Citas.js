@@ -2,9 +2,11 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
 const CitasSchema = new Schema({
-    id:{
-        type: String,
-        required: false,
+    
+    pacienteId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Paciente',
+        required: true
     },
     tratamiento: {
         type: String,
@@ -29,11 +31,6 @@ const CitasSchema = new Schema({
     realizo:{
         type:String,
         required:false
-    },
-    pacienteId: { // Este es el campo que se referirá al paciente
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Paciente', // Esto indica que el campo pacienteId hace referencia al modelo 'Paciente'
-        required: true // Este campo es obligatorio
     }
 });
 

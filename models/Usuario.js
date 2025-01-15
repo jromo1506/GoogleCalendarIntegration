@@ -31,12 +31,14 @@ const UsuarioSchema = new Schema({
         type: String,
         required: true
     },
-    
+    //Si el tipo es doctor
+    //Si el tipo es recepcinista
+    //Si el tipo es admin
     tipo: {
         type: String,
         required: true
     },
-    //Si el tipo es doctor
+    
     especialidad: {
         type: String,
         required: false
