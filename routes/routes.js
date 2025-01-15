@@ -3,7 +3,7 @@ const router = express.Router();
 const  calendarController  = require('../controllers/calendarController');
 const usuarioController = require('../controllers/usuariosController');
 const citasController = require('../controllers/citasController');
-
+// const doctorController = require('../controllers/doctorController');
 const pacienteController = require ('../controllers/pacienteController');
 const mensajeController = require ('../controllers/mensajeController');
 
