@@ -70,6 +70,16 @@ const PacienteSchema = new mongoose.Schema({
         type:String,
         required:false
     },
+
+    edad:{
+        type:String,
+        required:false
+    },
+    //H o M
+    genero:{
+        type:String,
+        required:false
+    },
    
 
 
