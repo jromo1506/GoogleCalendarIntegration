@@ -14,9 +14,15 @@ exports.crearUsuario = async (req, res) => {
         const nuevoUsuario = new Usuario({
             usuario: req.body.usuario,
             password: hashedPassword,
-            tipoUsuario: req.body.tipoUsuario,
+            nombre: req.body.nombre,
+            apeP: req.body.apeP,
+            apeM: req.body.apeM,
             telefono: req.body.telefono,
+            correo: req.body.correo,
+            tipo: req.body.tipo,
+            especialidad: req.body.especialidad,
         });
+        
 
         const usuarioGuardado = await nuevoUsuario.save();
         res.status(201).json(usuarioGuardado);
