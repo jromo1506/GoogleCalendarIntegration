@@ -71,6 +71,18 @@ const PacienteSchema = new mongoose.Schema({
         required: false
     },
 
+    edad:{
+        type:String,
+        required:false
+    },
+    //H o M
+    genero:{
+        type:String,
+        required:false
+    },
+   
+
+
     // Datos complementarios front end
     medicamentos: {
         type: String,

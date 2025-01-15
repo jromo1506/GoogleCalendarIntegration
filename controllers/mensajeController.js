@@ -26,8 +26,27 @@ exports.addMensaje = async (req, res) => {
 // Obtener todos los mensajes
 exports.getMensajes = async (req, res) => {
     try {
-        const mensajes = await Mensajes.find();
+        const { telefono, nombrePaciente, estado, orden } = req.query;
 
+        // Construcción de filtros
+        const filters = {};
+        if (telefono) {
+            filters.telefono = { $regex: telefono, $options: 'i' }; // Búsqueda insensible a mayúsculas/minúsculas
+        }
+        if (nombrePaciente) {
+            filters.nombrePaciente = { $regex: nombrePaciente, $options: 'i' };
+        }
+        if (estado) {
+            filters.estado = estado;
+        }
+
+        // Determinar orden de la fecha
+        const sortOrder = orden === 'desc' ? -1 : 1; // Ascendente por defecto, descendente si `orden=desc`
+
+        // Realiza la consulta con filtros y ordenamiento
+        const mensajes = await Mensajes.find(filters).sort({ fecha: sortOrder });
+
+        // Manejo de casos cuando no se encuentran mensajes
         if (!mensajes || mensajes.length === 0) {
             return res.status(404).json({ mensaje: 'No se encontraron mensajes' });
         }
@@ -37,9 +56,9 @@ exports.getMensajes = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al obtener mensajes', error: error.message });
     }
 };
-
 // Obtener un mensaje por ID
 exports.getMensajeById = async (req, res) => {
+    const {telefono,nombrePaciente,estado}=req.query;
     const { id } = req.params;
 
     try {
@@ -54,6 +73,8 @@ exports.getMensajeById = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al obtener el mensaje', error: error.message });
     }
 };
+
+
 
 // exports.getMensajeByTelefono = async(req,res)=>{
 //     const telefono = req.params.telefono;
@@ -97,10 +118,18 @@ exports.deleteMensaje = async (req, res) => {
     } catch (error) {
         res.status(500).json({ mensaje: 'Error al eliminar el mensaje', error: error.message });
     }
+    
 };
 
 
 
+
+
+
+
+
+
+// DEPRECADO: Solo se usara si ngx pagination no funciona
 exports.getMensajesFiltrados = async (req, res) => {
     try {
         // Parámetros de consulta
