@@ -25,6 +25,7 @@ router.put('/user/:id', usuarioController.actualizarUsuario);
 router.delete('/user/:id', usuarioController.eliminarUsuario);
 
 router.post('/citas', citasController.crearCita);
+router.get('/citas/paciente/:pacienteId', citasController.obtenerCitasPorPaciente);
 router.get('/citas', citasController.obtenerCitas);
 router.get('/citas/:id', citasController.obtenerCitaPorId);
 router.put('/citas/:id', citasController.actualizarCita);

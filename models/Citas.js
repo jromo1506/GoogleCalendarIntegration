@@ -3,7 +3,11 @@ const {Schema} = mongoose;
 
 const CitasSchema = new Schema({
     
-
+    pacienteId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Paciente',
+        required: true
+    },
     tratamiento: {
         type: String,
         required: true,

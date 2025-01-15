@@ -3,13 +3,31 @@ const Citas = require('../models/Citas');
 // Crear una nueva cita
 exports.crearCita = async (req, res) => {
     try {
-        const nuevaCita = new Citas(req.body);
+        const { pacienteId, tratamiento, observaciones, pago, realizo } = req.body;
+        
+        if (!pacienteId) {
+            return res.status(400).json({ mensaje: 'El pacienteId es requerido' });
+        }
+
+        const nuevaCita = new Citas({ pacienteId, tratamiento, observaciones, pago, realizo });
         const citaGuardada = await nuevaCita.save();
         res.status(201).json(citaGuardada);
     } catch (error) {
         res.status(500).json({ mensaje: 'Error al crear la cita', error });
     }
 };
+
+
+exports.obtenerCitasPorPaciente = async (req, res) => {
+    try {
+        const { pacienteId } = req.params;
+        const citas = await Citas.find({ pacienteId });
+        res.status(200).json(citas);
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al obtener las citas', error });
+    }
+};
+
 
 // Obtener todas las citas
 exports.obtenerCitas = async (req, res) => {
