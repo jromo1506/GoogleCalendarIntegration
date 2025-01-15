@@ -8,20 +8,12 @@ const CitasSchema = new Schema({
         type: String,
         required: true,
     },
-    fecha:{
-        type:Date,
-        required:true
-    },
-    hora_inicio: {
-        type: String,
-        required: true
-    },
-     hora_final: {
-        type: String,
-        required: false,
-    },
     observaciones:{
         type:String,
+        required:false,
+    },
+    pago:{
+        type:Number,
         required:false,
     },
     realizo:{
