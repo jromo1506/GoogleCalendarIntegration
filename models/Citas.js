@@ -2,11 +2,12 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
 const CitasSchema = new Schema({
-    idPaciente:{
-        type:String,
-        required:true
+    
+    pacienteId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Paciente',
+        required: true
     },
-
     tratamiento: {
         type: String,
         required: true,

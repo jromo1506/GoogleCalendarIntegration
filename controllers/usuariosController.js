@@ -11,10 +11,6 @@ exports.crearUsuario = async (req, res) => {
         }
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-<<<<<<< HEAD
-        const nuevoUsuario = new Usuario(req.body);
-           
-=======
         const nuevoUsuario = new Usuario({
             usuario: req.body.usuario,
             password: hashedPassword,
@@ -27,7 +23,6 @@ exports.crearUsuario = async (req, res) => {
             especialidad: req.body.especialidad,
         });
         
->>>>>>> d205aa2c62ea6996936118f394a6b6c3aef20ed2
 
         const usuarioGuardado = await nuevoUsuario.save();
         res.status(201).json(usuarioGuardado);
