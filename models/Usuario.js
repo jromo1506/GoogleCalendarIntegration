@@ -31,7 +31,7 @@ const UsuarioSchema = new Schema({
         type: String,
         required: true
     },
-    
+    //Tipo: Admin, Recepcionista, Doctor
     tipo: {
         type: String,
         required: true
@@ -39,7 +39,8 @@ const UsuarioSchema = new Schema({
     //Si el tipo es doctor
     especialidad: {
         type: String,
-        required: false
+        required: false,
+        default:""
     },
 });
 

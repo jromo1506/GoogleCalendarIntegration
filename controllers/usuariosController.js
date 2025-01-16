@@ -11,12 +11,8 @@ exports.crearUsuario = async (req, res) => {
         }
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-        const nuevoUsuario = new Usuario({
-            usuario: req.body.usuario,
-            password: hashedPassword,
-            tipoUsuario: req.body.tipoUsuario,
-            telefono: req.body.telefono,
-        });
+        const nuevoUsuario = new Usuario(req.body);
+           
 
         const usuarioGuardado = await nuevoUsuario.save();
         res.status(201).json(usuarioGuardado);
@@ -24,7 +20,6 @@ exports.crearUsuario = async (req, res) => {
         res.status(500).json({ message: 'Error al crear el usuario', error });
     }
 };
-
 exports.autenticarUsuario = async (req, res) => {
     const { usuario, password } = req.body;
 
@@ -33,9 +28,9 @@ exports.autenticarUsuario = async (req, res) => {
         if (!usuarioEncontrado) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
-        const esValidaLaPassword = await bcrypt.compare(password, usuarioEncontrado.password);
 
-        if (!esValidaLaPassword) {
+        // Comparación directa de contraseñas
+        if (usuarioEncontrado.password !== password) {
             return res.status(401).json({ message: 'Contraseña incorrecta' });
         }
 
@@ -44,7 +39,7 @@ exports.autenticarUsuario = async (req, res) => {
             usuario: {
                 id: usuarioEncontrado._id,
                 usuario: usuarioEncontrado.usuario,
-                tipoUsuario: usuarioEncontrado.tipoUsuario, // Incluye el tipo de usuario
+                tipo: usuarioEncontrado.tipo, // Incluye el tipo de usuario
                 telefono: usuarioEncontrado.telefono,
             },
         });

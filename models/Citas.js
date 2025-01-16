@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
 const CitasSchema = new Schema({
-    
+    idPaciente:{
+        type:String,
+        required:true
+    },
 
     tratamiento: {
         type: String,
