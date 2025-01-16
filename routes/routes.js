@@ -3,7 +3,7 @@ const router = express.Router();
 const  calendarController  = require('../controllers/calendarController');
 const usuarioController = require('../controllers/usuariosController');
 const citasController = require('../controllers/citasController');
-
+// const doctorController = require('../controllers/doctorController');
 const pacienteController = require ('../controllers/pacienteController');
 const mensajeController = require ('../controllers/mensajeController');
 
@@ -25,6 +25,7 @@ router.put('/user/:id', usuarioController.actualizarUsuario);
 router.delete('/user/:id', usuarioController.eliminarUsuario);
 
 router.post('/citas', citasController.crearCita);
+router.get('/citas/paciente/:pacienteId', citasController.obtenerCitasPorPaciente);
 router.get('/citas', citasController.obtenerCitas);
 router.get('/citas/:id', citasController.obtenerCitaPorId);
 router.put('/citas/:id', citasController.actualizarCita);
