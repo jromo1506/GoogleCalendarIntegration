@@ -30,17 +30,20 @@ exports.crearUsuario = async (req, res) => {
         res.status(500).json({ message: 'Error al crear el usuario', error });
     }
 };
+
 exports.autenticarUsuario = async (req, res) => {
     const { usuario, password } = req.body;
 
     try {
+        // Busca el usuario en la base de datos
         const usuarioEncontrado = await Usuario.findOne({ usuario });
         if (!usuarioEncontrado) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        // Comparación directa de contraseñas
-        if (usuarioEncontrado.password !== password) {
+        // Comparar la contraseña ingresada con la contraseña almacenada (hash)
+        const passwordCorrecta = await bcrypt.compare(password, usuarioEncontrado.password);
+        if (!passwordCorrecta) {
             return res.status(401).json({ message: 'Contraseña incorrecta' });
         }
 
@@ -58,6 +61,7 @@ exports.autenticarUsuario = async (req, res) => {
         res.status(500).json({ message: 'Error al autenticar el usuario', error: error.message });
     }
 };
+
 
 // Obtener todos los usuarios
 exports.obtenerUsuarios = async (req, res) => {
