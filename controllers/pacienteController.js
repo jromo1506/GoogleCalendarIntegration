@@ -14,6 +14,7 @@ exports.crearPaciente = async (req, res) => {
 // Obtener todos los pacientes
 exports.obtenerPacientes = async (req, res) => {
     try {
+        cosole.log("Testing deploy");
         const pacientes = await Paciente.find();
         res.status(200).json(pacientes);
     } catch (error) {
