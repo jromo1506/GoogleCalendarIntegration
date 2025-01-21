@@ -44,6 +44,12 @@ const UsuarioSchema = new Schema({
         required: false,
         default:""
     },
+    idPacientes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Paciente',
+        },
+    ],
 });
 
 

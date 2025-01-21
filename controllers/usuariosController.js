@@ -31,6 +31,48 @@ exports.crearUsuario = async (req, res) => {
     }
 };
 
+// Asignar pacientes a un doctor
+exports.asignarPacientes = async (req, res) => {
+    const { doctorId, pacienteIds } = req.body;
+
+    try {
+        // Validar si el doctorId es válido
+        const doctor = await Usuario.findById(doctorId);
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor no encontrado' });
+        }
+
+        // Validar si el usuario tiene el rol de "doctor"
+        if (doctor.tipo !== 'Doctor') {
+            return res.status(400).json({ message: 'El usuario no tiene el rol de doctor' });
+        }
+
+        // Asegurarse de que pacienteIds sea un array
+        if (!Array.isArray(pacienteIds)) {
+            return res.status(400).json({ message: 'El formato de pacienteIds no es válido' });
+        }
+
+        // Agregar pacientes al array idPacientes (evitando duplicados)
+        const nuevosPacientes = new Set([...doctor.idPacientes, ...pacienteIds]);
+        doctor.idPacientes = Array.from(nuevosPacientes);
+
+        // Guardar cambios en la base de datos
+        const doctorActualizado = await doctor.save();
+
+        res.status(200).json({
+            message: 'Pacientes asignados correctamente',
+            doctor: {
+                id: doctorActualizado._id,
+                nombre: doctorActualizado.nombre,
+                idPacientes: doctorActualizado.idPacientes,
+            },
+        });
+    } catch (error) {
+        console.error('Error al asignar pacientes:', error);
+        res.status(500).json({ message: 'Error al asignar pacientes', error: error.message });
+    }
+};
+
 exports.autenticarUsuario = async (req, res) => {
     const { usuario, password } = req.body;
 
