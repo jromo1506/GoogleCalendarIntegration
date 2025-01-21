@@ -17,10 +17,6 @@ const PacienteSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    horario: {
-        type: String,
-        required: true,
-    },
     apeM: {
         type: String,
         required: true,
