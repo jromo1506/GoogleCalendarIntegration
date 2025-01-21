@@ -31,13 +31,9 @@ const UsuarioSchema = new Schema({
         type: String,
         required: true
     },
-<<<<<<< HEAD
-    //Tipo: Admin, Recepcionista, Doctor
-=======
     //Si el tipo es doctor
     //Si el tipo es recepcinista
     //Si el tipo es admin
->>>>>>> d205aa2c62ea6996936118f394a6b6c3aef20ed2
     tipo: {
         type: String,
         required: true
