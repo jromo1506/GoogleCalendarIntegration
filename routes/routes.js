@@ -46,6 +46,7 @@ router.post('/addMensaje',mensajeController.addMensaje);
 router.get('/getMensajes', mensajeController.getMensajes);
 router.get('/getMensajesFiltrados',mensajeController.getMensajesFiltrados);
 router.delete('/deleteMensaje/:id',mensajeController.deleteMensaje);
+router.get('/mensajes/usuario/:usuarioId', mensajeController.getMensajesPorUsuario);
 
 
 

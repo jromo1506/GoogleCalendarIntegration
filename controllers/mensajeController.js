@@ -74,6 +74,33 @@ exports.getMensajeById = async (req, res) => {
     }
 };
 
+exports.getMensajesPorUsuario = async (req, res) => {
+    try {
+        const { usuarioId } = req.params; // Obtén el ID del usuario desde los parámetros de la ruta
+
+        // Busca los pacientes relacionados con el usuario
+        const usuario = await Usuario.findById(usuarioId);
+
+        if (!usuario) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+        }
+
+        // Filtrar mensajes por los IDs en el array `idPacientes`
+        const mensajes = await Mensajes.find({
+            pacienteId: { $in: usuario.idPacientes }
+        });
+
+        if (!mensajes || mensajes.length === 0) {
+            return res.status(404).json({ mensaje: 'No se encontraron mensajes para este usuario' });
+        }
+
+        res.status(200).json(mensajes);
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al obtener los mensajes', error: error.message });
+    }
+};
+
+
 
 
 // exports.getMensajeByTelefono = async(req,res)=>{
