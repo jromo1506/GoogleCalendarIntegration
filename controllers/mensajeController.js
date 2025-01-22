@@ -1,5 +1,6 @@
 const Mensajes = require('../models/Mensaje');
 const Paciente = require('../models/Paciente')
+const Usuario = require('../models/Usuario'); // Asegúrate de que esta línea esté presente
 
 
 
@@ -24,27 +25,22 @@ exports.addMensaje = async (req, res) => {
 };
 
 // Obtener todos los mensajes
+// Obtener todos los mensajes para un usuario específico
 exports.getMensajes = async (req, res) => {
     try {
-        const { telefono, nombrePaciente, estado, orden } = req.query;
+        const usuarioId = req.query.usuarioId;  // Obtener el usuarioId desde la query
 
-        // Construcción de filtros
-        const filters = {};
-        if (telefono) {
-            filters.telefono = { $regex: telefono, $options: 'i' }; // Búsqueda insensible a mayúsculas/minúsculas
-        }
-        if (nombrePaciente) {
-            filters.nombrePaciente = { $regex: nombrePaciente, $options: 'i' };
-        }
-        if (estado) {
-            filters.estado = estado;
+        // Obtener el usuario para obtener sus pacientes
+        const usuario = await Usuario.findById(usuarioId); // Asegúrate de tener el modelo Usuario
+        
+        if (!usuario) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado' });
         }
 
-        // Determinar orden de la fecha
-        const sortOrder = orden === 'desc' ? -1 : 1; // Ascendente por defecto, descendente si `orden=desc`
+        const idPacientes = usuario.idPacientes; // Array de IDs de pacientes asociados al usuario
 
-        // Realiza la consulta con filtros y ordenamiento
-        const mensajes = await Mensajes.find(filters).sort({ fecha: sortOrder });
+        // Filtrar los mensajes que correspondan a los pacientes de este usuario
+        const mensajes = await Mensajes.find({ idPaciente: { $in: idPacientes } });
 
         // Manejo de casos cuando no se encuentran mensajes
         if (!mensajes || mensajes.length === 0) {
@@ -56,6 +52,7 @@ exports.getMensajes = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al obtener mensajes', error: error.message });
     }
 };
+
 
 
 // Obtener un mensaje por ID

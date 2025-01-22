@@ -12,15 +12,17 @@ exports.crearPaciente = async (req, res) => {
 };
 
 // Obtener todos los pacientes
+// Obtener todos los pacientes
 exports.obtenerPacientes = async (req, res) => {
     try {
-        cosole.log("Testing deploy");
+        console.error("Testing deploy");
         const pacientes = await Paciente.find();
         res.status(200).json(pacientes);
     } catch (error) {
         res.status(500).json({ mensaje: 'Error al obtener los pacientes', error });
     }
 };
+
 
 // Obtener un paciente por id
 exports.obtenerPacientePorId = async (req, res) => {
