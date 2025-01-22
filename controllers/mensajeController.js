@@ -56,6 +56,8 @@ exports.getMensajes = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al obtener mensajes', error: error.message });
     }
 };
+
+
 // Obtener un mensaje por ID
 exports.getMensajeById = async (req, res) => {
     const {telefono,nombrePaciente,estado}=req.query;
@@ -120,13 +122,6 @@ exports.deleteMensaje = async (req, res) => {
     }
     
 };
-
-
-
-
-
-
-
 
 
 // DEPRECADO: Solo se usara si ngx pagination no funciona
