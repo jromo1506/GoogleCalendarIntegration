@@ -121,25 +121,30 @@ exports.deleteMensaje = async (req, res) => {
 };
 
 
-// DEPRECADO: Solo se usara si ngx pagination no funciona
 exports.getMensajesFiltrados = async (req, res) => {
     try {
         // Parámetros de consulta
         const {
-            page = 1, // Número de página (por defecto 1)
-            limit = 10, // Límite de resultados por página (por defecto 10)
             search = '', // Búsqueda (valor opcional)
             sortBy = 'createdAt', // Campo para ordenar (por defecto, fecha de creación)
             sortOrder = 'desc', // Orden (asc o desc, por defecto descendente)
-            estado, // Filtro por estado (opcional)
+            estado // Filtro por estado (opcional)
         } = req.query;
+
+        const { idPacientes } = req.body; // Array de IDs de pacientes recibido por POST
 
         // Construir el filtro de búsqueda
         const filters = {};
+   
+        if (idPacientes && idPacientes.length > 0) {
+            filters.idPaciente = { $in: idPacientes }; // Filtrar por los IDs del array
+            console.log('Filtro aplicado:', filters);
+        }
+
         if (search) {
             filters.$or = [
-                { telefono: { $regex: search, $options: 'i' } },// Búsqueda insensible a mayúsculas/minúsculas
-                { nombrePaciente: { $regex: search, $options: 'i' } } 
+                { telefono: { $regex: search, $options: 'i' } }, // Búsqueda insensible a mayúsculas/minúsculas
+                { nombrePaciente: { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -147,26 +152,15 @@ exports.getMensajesFiltrados = async (req, res) => {
             filters.estado = estado; // Filtrar por estado si se proporciona
         }
 
-        // Opciones de paginación
+        // Opciones de ordenación
         const options = {
-            skip: (page - 1) * limit, // Saltar los resultados de las páginas anteriores
-            limit: parseInt(limit), // Limitar los resultados devueltos
             sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 } // Ordenar resultados
         };
 
         // Realizar la consulta
         const mensajes = await Mensajes.find(filters, null, options);
 
-        // Obtener el conteo total de documentos para las páginas
-        const total = await Mensajes.countDocuments(filters);
-
-        res.status(200).json({
-            total,
-            page: parseInt(page),
-            limit: parseInt(limit),
-            totalPages: Math.ceil(total / limit),
-            mensajes
-        });
+        res.status(200).json(mensajes);
     } catch (error) {
         res.status(500).json({ mensaje: 'Error al obtener los mensajes', error: error.message });
     }

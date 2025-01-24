@@ -162,3 +162,26 @@ exports.eliminarUsuario = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al eliminar el usuario', error });
     }
 };
+
+
+
+
+exports.getIdPacientes = async (req, res) => {
+    try {
+        const { usuarioId } = req.params; // Obtén el ID del usuario desde los parámetros de la URL
+
+        // Busca al usuario por su ID y limita la selección a solo idPacientes
+        const usuario = await Usuario.findById(usuarioId).select('idPacientes');
+
+        if (!usuario) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+        }
+
+        // Devuelve solo los ids como un array plano
+        res.status(200).json({
+            idPacientes: usuario.idPacientes,
+        });
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al obtener los idPacientes', error: error.message });
+    }
+};
