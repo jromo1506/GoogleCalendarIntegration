@@ -1,6 +1,7 @@
 const Mensajes = require('../models/Mensaje');
 const Paciente = require('../models/Paciente')
 const Usuario = require('../models/Usuario'); // Asegúrate de que esta línea esté presente
+const Mensaje = require('../models/Mensaje');
 
 
 
@@ -24,7 +25,7 @@ exports.addMensaje = async (req, res) => {
     }
 };
 
-// Obtener todos los mensajes
+
 // Obtener todos los mensajes para un usuario específico
 exports.getMensajes = async (req, res) => {
     try {
@@ -117,7 +118,6 @@ exports.deleteMensaje = async (req, res) => {
     } catch (error) {
         res.status(500).json({ mensaje: 'Error al eliminar el mensaje', error: error.message });
     }
-    
 };
 
 
