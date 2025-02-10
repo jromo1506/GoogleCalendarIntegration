@@ -24,6 +24,8 @@ router.get('/user/:id', usuarioController.obtenerUsuarioPorId);
 router.put('/user/:id', usuarioController.actualizarUsuario);
 router.delete('/user/:id', usuarioController.eliminarUsuario);
 router.post('/user/asignarPacientes', usuarioController.asignarPacientes);
+router.get('/getIdsPacientes/:usuarioId',usuarioController.getIdPacientes);
+
 
 router.post('/citas', citasController.crearCita);
 router.get('/citas/paciente/:pacienteId', citasController.obtenerCitasPorPaciente);
@@ -44,9 +46,10 @@ router.post('/addPaciente');
 
 router.post('/addMensaje',mensajeController.addMensaje);
 router.get('/getMensajes', mensajeController.getMensajes);
-router.get('/getMensajesFiltrados',mensajeController.getMensajesFiltrados);
+router.post('/getMensajesFiltrados',mensajeController.getMensajesFiltrados);
 router.delete('/deleteMensaje/:id',mensajeController.deleteMensaje);
 router.get('/mensajes/usuario/:usuarioId', mensajeController.getMensajesPorUsuario);
+
 
 
 

@@ -44,7 +44,7 @@ const UsuarioSchema = new Schema({
         required: false,
         default:""
     },
-    idPacientes: [
+    idPacientes: [//ids de pacientes en caso que el tipo de usuario sea Doctor
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Paciente',
