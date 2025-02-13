@@ -27,11 +27,11 @@ const PacienteSchema = new mongoose.Schema({
     },
     genero: {
         type: String,
-        required: true
+        required: false
     },
     fechaNac: {
         type: Date,
-        required: true
+        required: false
     },
     correoElectronico: {
         type: String,
