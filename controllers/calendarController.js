@@ -254,6 +254,8 @@ exports.crearCitaCV = async (req, res) => {
               message: 'Eventos creados exitosamente',
               event1: createdEvent1.data,
               event2: createdEvent2.data,
+
+            
             });
           }
         );

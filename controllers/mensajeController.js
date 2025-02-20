@@ -192,3 +192,18 @@ exports.getMensajesFiltrados = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al obtener los mensajes', error: error.message });
     }
 };
+
+
+exports.getMensajesByIdPaciente = async(req,res) => {
+    try{
+        const {idPaciente} = req.params;
+        const mensajes = await Mensajes.find({idPaciente});
+        if(mensajes.length === 0){
+           return res.status(400).json([]);
+        }
+        res.status(200).json(mensajes);
+    }
+    catch(error){
+        res.status(500).json({mensaje:"Error al obtener los chats del usuario",error})
+    }
+}

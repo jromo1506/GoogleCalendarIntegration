@@ -6,6 +6,7 @@ const citasController = require('../controllers/citasController');
 // const doctorController = require('../controllers/doctorController');
 const pacienteController = require ('../controllers/pacienteController');
 const mensajeController = require ('../controllers/mensajeController');
+const pacienteCitaController = require('../controllers/pacienteCitaController');
 
 
 // Routes for calendar operations
@@ -49,8 +50,9 @@ router.get('/getMensajes', mensajeController.getMensajes);
 router.post('/getMensajesFiltrados',mensajeController.getMensajesFiltrados);
 router.delete('/deleteMensaje/:id',mensajeController.deleteMensaje);
 router.get('/mensajes/usuario/:usuarioId', mensajeController.getMensajesPorUsuario);
+router.get('/getMensajesByIdPaciente/:idPaciente',mensajeController.getMensajesByIdPaciente);
 
-
-
+router.post('/vincularPacienteCita', pacienteCitaController.vincularPacienteCita);
+router.post('/subirVariasCitas',pacienteCitaController.subirVariasCitas);
 
 module.exports = router;
