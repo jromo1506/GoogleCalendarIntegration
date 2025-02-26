@@ -56,7 +56,7 @@ router.get('/getMensajesByIdPaciente/:idPaciente',mensajeController.getMensajesB
 router.post('/vincularPacienteCita', pacienteCitaController.vincularPacienteCita);
 router.post('/subirVariasCitas',pacienteCitaController.subirVariasCitas);
 
-router.post('/checkout',stripeCheckout.checkout);
-router.get('/session-status',stripeCheckout.status)
+// router.post('/checkout',stripeCheckout.checkout);
+// router.get('/session-status',stripeCheckout.status)
 
 module.exports = router;
