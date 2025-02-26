@@ -7,6 +7,7 @@ const citasController = require('../controllers/citasController');
 const pacienteController = require ('../controllers/pacienteController');
 const mensajeController = require ('../controllers/mensajeController');
 const pacienteCitaController = require('../controllers/pacienteCitaController');
+const stripeCheckout = require('../services/stripeCheckout')
 
 
 // Routes for calendar operations
@@ -54,5 +55,8 @@ router.get('/getMensajesByIdPaciente/:idPaciente',mensajeController.getMensajesB
 
 router.post('/vincularPacienteCita', pacienteCitaController.vincularPacienteCita);
 router.post('/subirVariasCitas',pacienteCitaController.subirVariasCitas);
+
+router.post('/checkout',stripeCheckout.checkout);
+router.get('/session-status',stripeCheckout.status)
 
 module.exports = router;
