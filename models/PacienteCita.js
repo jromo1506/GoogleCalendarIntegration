@@ -13,7 +13,8 @@ const PacienteCitaSchema = new Schema({
         required:false
     }],
     expiraEn: {
-         type: Date, required: true, expires: 0 
+         type: Date, 
+         required: true, 
     }
    
 });

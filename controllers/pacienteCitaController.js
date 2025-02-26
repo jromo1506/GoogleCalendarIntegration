@@ -1,4 +1,6 @@
 const PacienteCita = require('../models/PacienteCita');
+
+
 exports.vincularPacienteCita = async (req, res) => {
     const vinculo = req.body;
     console.log("Datos recibidos:", vinculo);
