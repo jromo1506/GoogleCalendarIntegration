@@ -1,43 +1,35 @@
 // jobs/plantillas.js
 const axios = require('axios');
 
-// Configuración inicial
-const PHONE_NUMBER_ID = '164144560120336'; // Reemplaza con tu ID de número de teléfono
-const ACCESS_TOKEN = 'EAAIfZAcqC9igBO94uMac2JIPQlBEGrBmpYAzkyl4OyinGJmpYgZBgwF1xCtgryeXhMw1ZBYmN6XvjrIfwPSvULpd8iNbrrT1T7DUJUIm2IrR0iw7vnyk4sKjwiVMlld6VbOmRgREZA5rOcQLPQr5bZA8whHL5wAWeNeZCorvDj4F3oZCesjdgbWYfwBv0ZCx2dcg7wZDZD'; // Reemplaza con tu token de acceso
-const API_VERSION = 'v22.0'; // Versión de la API de WhatsApp
-const RECIPIENT_NUMBER = '524492231673'; // Número de teléfono del destinatario
-const TEMPLATE_NAME = 'prueba'; // Nombre de la plantilla aprobada
-
-// Función para enviar un mensaje de plantilla
-async function sendTemplateMessage() {
-    const url = `https://graph.facebook.com/${API_VERSION}/${PHONE_NUMBER_ID}/messages`;
+const enviarPlantilla = async () => {
+    const token = 'EAAIfZAcqC9igBO6EiWKWRyFZBbkZAZBgLNhoW29V3knhxIWx7Vlbkda7zNKIHZC3ZAZAD0yZABHpVjmKwlAl2NZAoI9ZAHc2NZBdZCrgit7pTbn6xOooZC7GZB9klZCcOk5EI5ZAyeqr62TQ59j2M0r8VE5LcZCuCuciuuQZCZBsmCpBqw26vGRe5a9StRq11IZAJF0gQzNBqM3bsQf5ZCuByM5M0WVOfqQQ6wXUWQAjI4ZAKV7oVPCCt6Wd8ZD';
+    const url = 'https://graph.facebook.com/v22.0/164144560120336/messages';
 
     const data = {
-        messaging_product: 'whatsapp',
-        to: RECIPIENT_NUMBER,
-        type: 'template',
+        messaging_product: "whatsapp",
+        to: "524492231673",
+        type: "template",
         template: {
-            name: TEMPLATE_NAME,
+            name: "prueba",
             language: {
-                code: 'es', // Código de idioma (español en este caso)
-            },
-        },
+                code: "Es"
+            }
+        }
     };
 
-    const headers = {
-        Authorization: `Bearer ${ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
     };
 
     try {
-        const response = await axios.post(url, data, { headers });
-        console.log('Mensaje enviado:', response.data);
-        return response.data;
+        const response = await axios.post(url, data, config);
+        console.log('Respuesta:', response.data);
     } catch (error) {
-        console.error('Error al enviar el mensaje:', error.response ? error.response.data : error.message);
-        throw error;
+        console.error('Error:', error.response ? error.response.data : error.message);
     }
-}
+};
 
-// Exportar la función
-module.exports = sendTemplateMessage;
+module.exports = enviarPlantilla;
