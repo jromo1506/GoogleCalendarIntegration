@@ -18,10 +18,10 @@ app.use('/DentalArce', require('./routes/routes'));
 
 vinculosJob();
 
-cron.schedule('* * * * *', () => {
-  console.log('Enviando mensaje de plantilla...');
-  enviarPlantilla(); // Llamar a la función
-});
+// cron.schedule('* * * * *', () => {
+//   console.log('Enviando mensaje de plantilla...');
+//   enviarPlantilla(); // Llamar a la función
+// });
 
 // Start the Express server
 app.listen(5000, () => {

@@ -52,6 +52,8 @@ router.post('/getMensajesFiltrados',mensajeController.getMensajesFiltrados);
 router.delete('/deleteMensaje/:id',mensajeController.deleteMensaje);
 router.get('/mensajes/usuario/:usuarioId', mensajeController.getMensajesPorUsuario);
 router.get('/getMensajesByIdPaciente/:idPaciente',mensajeController.getMensajesByIdPaciente);
+router.post('/addMensajeDoctor', mensajeController.addMensajeDoctor);
+router.get('/getMensajesDoctor', mensajeController.getMensajesDoctor);
 
 router.post('/vincularPacienteCita', pacienteCitaController.vincularPacienteCita);
 router.post('/subirVariasCitas',pacienteCitaController.subirVariasCitas);

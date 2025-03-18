@@ -2,6 +2,7 @@ const Mensajes = require('../models/Mensaje');
 const Paciente = require('../models/Paciente')
 const Usuario = require('../models/Usuario'); // Asegúrate de que esta línea esté presente
 const Mensaje = require('../models/Mensaje');
+const MensajeDoctor = require('../models/MensajeDoctor');
 
 
 
@@ -207,3 +208,31 @@ exports.getMensajesByIdPaciente = async(req,res) => {
         res.status(500).json({mensaje:"Error al obtener los chats del usuario",error})
     }
 }
+
+// Guardar un mensaje enviado por el doctor
+exports.addMensajeDoctor = async (req, res) => {
+    try {
+      const { idDoctor, idPaciente, mensaje } = req.body;
+  
+      const nuevoMensaje = new MensajeDoctor({
+        idDoctor,
+        idPaciente,
+        mensaje,
+      });
+  
+      const mensajeGuardado = await nuevoMensaje.save();
+      res.status(201).json(mensajeGuardado);
+    } catch (error) {
+      res.status(500).json({ mensaje: 'Error al guardar el mensaje del doctor', error: error.message });
+    }
+  };
+
+  exports.getMensajesDoctor = async (req, res) => {
+    try {
+      const { idDoctor, idPaciente } = req.query;
+      const mensajes = await MensajeDoctor.find({ idDoctor, idPaciente });
+      res.status(200).json(mensajes);
+    } catch (error) {
+      res.status(500).json({ mensaje: 'Error al obtener los mensajes del doctor', error: error.message });
+    }
+  };
