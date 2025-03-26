@@ -2,7 +2,7 @@
 const axios = require('axios');
 
 const enviarPlantilla = async () => {
-    const token = 'EAAIfZAcqC9igBO6EiWKWRyFZBbkZAZBgLNhoW29V3knhxIWx7Vlbkda7zNKIHZC3ZAZAD0yZABHpVjmKwlAl2NZAoI9ZAHc2NZBdZCrgit7pTbn6xOooZC7GZB9klZCcOk5EI5ZAyeqr62TQ59j2M0r8VE5LcZCuCuciuuQZCZBsmCpBqw26vGRe5a9StRq11IZAJF0gQzNBqM3bsQf5ZCuByM5M0WVOfqQQ6wXUWQAjI4ZAKV7oVPCCt6Wd8ZD';
+    const token = 'EAAIfZAcqC9igBO94uMac2JIPQlBEGrBmpYAzkyl4OyinGJmpYgZBgwF1xCtgryeXhMw1ZBYmN6XvjrIfwPSvULpd8iNbrrT1T7DUJUIm2IrR0iw7vnyk4sKjwiVMlld6VbOmRgREZA5rOcQLPQr5bZA8whHL5wAWeNeZCorvDj4F3oZCesjdgbWYfwBv0ZCx2dcg7wZDZD';
     const url = 'https://graph.facebook.com/v22.0/164144560120336/messages';
 
     const data = {
@@ -10,10 +10,21 @@ const enviarPlantilla = async () => {
         to: "524492231673",
         type: "template",
         template: {
-            name: "prueba",
+            name: "example_plan",
             language: {
-                code: "Es"
-            }
+                code: "en"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": "Buenas tardes paciente lelo"
+                        }
+                    ]
+                }
+            ]
         }
     };
 

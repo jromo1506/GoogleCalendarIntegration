@@ -3,7 +3,7 @@ const Paciente = require('../models/Paciente')
 const Usuario = require('../models/Usuario'); // Asegúrate de que esta línea esté presente
 const Mensaje = require('../models/Mensaje');
 const MensajeDoctor = require('../models/MensajeDoctor');
-
+const enviarMensajeWhatsApp = require('../services/whatsappService');
 
 
 // Crear un nuevo mensaje
@@ -212,20 +212,33 @@ exports.getMensajesByIdPaciente = async(req,res) => {
 // Guardar un mensaje enviado por el doctor
 exports.addMensajeDoctor = async (req, res) => {
     try {
-      const { idDoctor, idPaciente, mensaje } = req.body;
-  
-      const nuevoMensaje = new MensajeDoctor({
-        idDoctor,
-        idPaciente,
-        mensaje,
-      });
-  
-      const mensajeGuardado = await nuevoMensaje.save();
-      res.status(201).json(mensajeGuardado);
+        const { idDoctor, idPaciente, mensaje } = req.body;
+
+        // Guardar el mensaje en la base de datos
+        const nuevoMensaje = new MensajeDoctor({
+            idDoctor,
+            idPaciente,
+            mensaje,
+        });
+
+        const mensajeGuardado = await nuevoMensaje.save();
+
+        // Obtener el número de WhatsApp del paciente
+        const paciente = await Paciente.findById(idPaciente);
+        if (!paciente) {
+            return res.status(404).json({ mensaje: 'Paciente no encontrado' });
+        }
+
+        const numeroPaciente = paciente.telefonoPaciente;
+
+        // Enviar el mensaje a WhatsApp
+        await enviarMensajeWhatsApp(numeroPaciente, mensaje);
+
+        res.status(201).json(mensajeGuardado);
     } catch (error) {
-      res.status(500).json({ mensaje: 'Error al guardar el mensaje del doctor', error: error.message });
+        res.status(500).json({ mensaje: 'Error al guardar el mensaje del doctor', error: error.message });
     }
-  };
+};
 
   exports.getMensajesDoctor = async (req, res) => {
     try {

@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.use('/DentalArce', require('./routes/routes'));
 
-vinculosJob();
+// vinculosJob();
 
 // cron.schedule('* * * * *', () => {
 //   console.log('Enviando mensaje de plantilla...');
