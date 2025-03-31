@@ -14,12 +14,10 @@ const filterSlotsByRules = (availableSlots) => {
   let validDays = [];
 
   if (today === "monday") {
-    validDays = ["martes", "miercoles", "jueves"];
-  } else if (today === "tuesday") {
     validDays = ["miercoles", "jueves"];
-  } else if (today === "wednesday") {
+  } else if (today === "tuesday") {
     validDays = ["jueves"];
-  } else if (["thursday", "friday", "saturday", "sunday"].includes(today)) {
+  } else if (["wednesday", "thursday", "friday", "saturday", "sunday"].includes(today)) {
     validDays = ["martes", "miercoles", "jueves"];
     availableSlots = availableSlots.map(slot => {
       let slotDate = moment(slot.date);
