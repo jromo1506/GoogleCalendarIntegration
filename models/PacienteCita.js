@@ -12,10 +12,13 @@ const PacienteCitaSchema = new Schema({
         type: String,
         required:false
     }],
-    expiraEn: {
+    recordatorioCita: {
          type: Date, 
          required: true, 
-    }
+    },
+
+
+    
    
 });
 

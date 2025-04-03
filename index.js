@@ -25,13 +25,13 @@ app.use('/DentalArce', require('./routes/routes'));
 //   enviarPlantilla(); // Llamar a la función
 // });
 
-// Programar la verificación de cumpleaños diariamente a las 9 AM
-// cron.schedule('* * * * *', () => {
-//   console.log('Verificando cumpleaños...');
-//   checkBirthdays();
-// }, {
-//   timezone: "America/Mexico_City" // Ajusta la zona horaria según necesites
-// });
+// verificación de cumpleaños diariamente a las 9 AM
+cron.schedule('0 9 * * *', () => {
+  console.log('Verificando cumpleaños...');
+  checkBirthdays();
+}, {
+  timezone: "America/Mexico_City" // Ajusta la zona horaria según necesites
+});
 
 
 // Start the Express server
