@@ -8,6 +8,7 @@ const pacienteController = require ('../controllers/pacienteController');
 const mensajeController = require ('../controllers/mensajeController');
 const pacienteCitaController = require('../controllers/pacienteCitaController');
 const stripeCheckout = require('../services/stripeCheckout')
+const pagoController = require ('../controllers/pagoController')
 
 
 // Routes for calendar operations
@@ -44,6 +45,12 @@ router.put('/paciente/:id', pacienteController.actualizarPaciente);
 router.delete('/paciente/:id', pacienteController.eliminarPaciente);
 router.get('/buscarPacientePorTelefono/:telefono',pacienteController.buscarPacientePorNumeroTelefonico);
 router.post('/addPaciente');
+
+//rutas de pago
+router.post('/pago', pagoController.crearPago);
+router.get('/pago/:pacienteId', pagoController.obtenerPagosPorPaciente);
+router.put('/pago/:pagoId', pagoController.actualizarValidadorPago);
+router.delete('/pago/:pagoId', pagoController.eliminarPago);
 
 
 router.post('/addMensaje',mensajeController.addMensaje);

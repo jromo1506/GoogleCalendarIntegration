@@ -8,6 +8,11 @@ const PagoSchema = new Schema({
         ref: 'Paciente',
         required: true
     },
+    pacienteTel:{
+        type: String, 
+        ref: 'Paciente',
+        required: true
+    },
     recordatorioPago: {
         type: Date, 
         required: true, 
@@ -19,10 +24,7 @@ const PagoSchema = new Schema({
     validadorPago:{
         type: Boolean,
         required: false,
-    }
-
-    
-   
+    },
 });
 
 
