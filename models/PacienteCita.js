@@ -13,8 +13,8 @@ const PacienteCitaSchema = new Schema({
         required:false
     }],
     recordatorioCita: {
-         type: Date, 
-         required: true, 
+         type: String, 
+         required: false, 
     },
 
 

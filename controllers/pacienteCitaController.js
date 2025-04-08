@@ -6,14 +6,13 @@ exports.vincularPacienteCita = async (req, res) => {
     console.log("Datos recibidos:", vinculo);
 
     try {
-        let fechaExpiracion = new Date(vinculo.expiraEn);
-        fechaExpiracion.setDate(fechaExpiracion.getDate() + 1); // Aumenta un día
+      
 
         // Crear la cita con los datos correctos
         const nuevaCita = new PacienteCita({
             pacienteId: vinculo.pacienteId,
             idsCitas: vinculo.idsCitas || [], // Asegura que sea un array (evita undefined)
-            expiraEn: fechaExpiracion // Fecha con un día adicional
+            recordatorioCita:  vinculo.recordatorioCita // Fecha con un día adicional
         });
 
         const citaGuardada = await nuevaCita.save();
