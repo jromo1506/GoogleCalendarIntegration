@@ -25,7 +25,24 @@ const PagoSchema = new Schema({
         type: Boolean,
         required: false,
     },
-});
+    sessionId: {
+        type: String,
+        unique: true
+    },
+    monto: {
+        type: Number
+    },
+    urlPago: {
+        type: String
+    },
+    estado: {
+        type: String,
+        enum: ['pendiente', 'completado', 'expirado', 'cancelado'],
+        default: 'pendiente'
+    },
+    fechaPago: {
+        type: Date
+    }
+}, { timestamps: true });
 
-
-module.exports = mongoose.model('Pago',PagoSchema);
+module.exports = mongoose.model('Pago', PagoSchema);

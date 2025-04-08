@@ -46,12 +46,6 @@ router.delete('/paciente/:id', pacienteController.eliminarPaciente);
 router.get('/buscarPacientePorTelefono/:telefono',pacienteController.buscarPacientePorNumeroTelefonico);
 router.post('/addPaciente');
 
-//rutas de pago
-router.post('/pago', pagoController.crearPago);
-router.get('/pago/:pacienteId', pagoController.obtenerPagosPorPaciente);
-router.put('/pago/:pagoId', pagoController.actualizarValidadorPago);
-router.delete('/pago/:pagoId', pagoController.eliminarPago);
-
 
 router.post('/addMensaje',mensajeController.addMensaje);
 router.get('/getMensajes', mensajeController.getMensajes);
