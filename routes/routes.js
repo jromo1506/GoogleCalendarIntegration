@@ -58,6 +58,9 @@ router.get('/getMensajesDoctor', mensajeController.getMensajesDoctor);
 
 router.post('/vincularPacienteCita', pacienteCitaController.vincularPacienteCita);
 router.post('/subirVariasCitas',pacienteCitaController.subirVariasCitas);
+router.get('/citas/recordatorios', pacienteCitaController.obtenerCitasConRecordatorios);
+router.get('/citas/todas', pacienteCitaController.obtenerTodasLasCitas);
+router.post('/citas/reiniciar', pacienteCitaController.reiniciarRecordatorios);
 
 // router.post('/checkout',stripeCheckout.checkout);
 // router.get('/session-status',stripeCheckout.status)

@@ -1,4 +1,5 @@
 const PacienteCita = require('../models/PacienteCita');
+const Paciente = require('../models/Paciente');
 
 
 exports.vincularPacienteCita = async (req, res) => {
@@ -12,7 +13,8 @@ exports.vincularPacienteCita = async (req, res) => {
         const nuevaCita = new PacienteCita({
             pacienteId: vinculo.pacienteId,
             idsCitas: vinculo.idsCitas || [], // Asegura que sea un array (evita undefined)
-            recordatorioCita:  vinculo.recordatorioCita // Fecha con un día adicional
+            recordatorioCita:  vinculo.recordatorioCita, // Fecha con un día adicional
+            enviado: vinculo.enviado || false
         });
 
         const citaGuardada = await nuevaCita.save();
@@ -48,3 +50,44 @@ exports.subirVariasCitas = async(req,res)=>{
         res.status(500).json({ message: 'Error interno del servidor.', error: error.message });
     }
 }
+
+// Obtener todas las citas con recordatorios pendientes
+exports.obtenerCitasConRecordatorios = async (req, res) => {
+    try {
+        const now = new Date();
+        const margen = 5 * 60 * 1000; // 5 minutos de margen
+        
+        const citas = await PacienteCita.find({
+            recordatorioCita: {
+                $lte: new Date(now.getTime() + margen),
+                $gte: new Date(now.getTime() - margen)
+            },
+            enviado: { $ne: true } // Solo citas no enviadas
+        }).populate('pacienteId');
+        
+        res.status(200).json(citas);
+    } catch (error) {
+        console.error('Error al obtener citas con recordatorios:', error);
+        res.status(500).json({ mensaje: 'Error al obtener citas con recordatorios', error });
+    }
+};
+
+// Obtener todas las citas (para propósitos de depuración)
+exports.obtenerTodasLasCitas = async (req, res) => {
+    try {
+        const citas = await PacienteCita.find().populate('pacienteId');
+        res.status(200).json(citas);
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al obtener las citas', error });
+    }
+};
+
+// Reiniciar estado de enviado (para propósitos de prueba)
+exports.reiniciarRecordatorios = async (req, res) => {
+    try {
+        await PacienteCita.updateMany({}, { $set: { enviado: false } });
+        res.status(200).json({ mensaje: 'Estados de recordatorios reiniciados' });
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al reiniciar recordatorios', error });
+    }
+};
