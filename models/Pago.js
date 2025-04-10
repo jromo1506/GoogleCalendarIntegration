@@ -1,48 +1,46 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
+const { Schema } = mongoose;
+const { v4: uuidv4 } = require('uuid');
 
 const PagoSchema = new Schema({
-    
     pacienteId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Paciente',
         required: true
     },
-    pacienteTel:{
-        type: String, 
-        ref: 'Paciente',
+    pacienteTel: {
+        type: String,
         required: true
     },
     recordatorioPago: {
-        type: Date, 
-        required: true, 
+        type: Date,
+        required: true
     },
     limitePago: {
-        type: Date, 
-        required: true, 
+        type: Date,
+        required: true
     },
-    validadorPago:{
+    validadorPago: {
         type: Boolean,
-        required: false,
+        default: false
     },
     sessionId: {
         type: String,
-        unique: true
+        required: true,
+        unique: true,
+        default: () => uuidv4() 
     },
     monto: {
-        type: Number
+        type: Number,
+        default: 75000 // $750 MXN
     },
-    urlPago: {
-        type: String
-    },
+    urlPago: String,
     estado: {
         type: String,
-        enum: ['pendiente', 'completado', 'expirado', 'cancelado'],
+        enum: ['pendiente', 'completado', 'expirado'],
         default: 'pendiente'
     },
-    fechaPago: {
-        type: Date
-    }
+    fechaPago: Date
 }, { timestamps: true });
 
 module.exports = mongoose.model('Pago', PagoSchema);

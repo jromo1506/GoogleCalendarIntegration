@@ -5,10 +5,12 @@ const express = require('express');
 const { google } = require('googleapis');
 const cors = require("cors");
 const app = express();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const enviarFelicitacion = require ('./services/plantillasService');
 const vinculosJob = require('./jobs/vinculosCron');
 const enviarPlantilla = require('./jobs/plantillas'); // Importar la función
 const checkBirthdays = require('./jobs/birthdayCron'); // Importar el nuevo job
+const webhookRouter = require('./routes/webhook')
 
 conectarDB();
 
@@ -17,6 +19,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/DentalArce', require('./routes/routes'));
+
+app.use('/webhook', webhookRouter);
 
 // vinculosJob();
 

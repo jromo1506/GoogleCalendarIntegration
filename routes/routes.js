@@ -10,6 +10,9 @@ const pacienteCitaController = require('../controllers/pacienteCitaController');
 const stripeCheckout = require('../services/stripeCheckout')
 const pagoController = require ('../controllers/pagoController')
 
+   
+router.post('/pagos/registro', pagoController.crearRegistroPago);
+router.post('/pagos/webhook', express.raw({type: 'application/json'}), pagoController.webhookStripe);
 
 // Routes for calendar operations
 router.get('/auth', calendarController.auth);
