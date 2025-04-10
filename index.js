@@ -2,44 +2,48 @@ require('dotenv').config();
 const cron = require('node-cron');
 const conectarDB = require('./config/db');
 const express = require('express');
-const { google } = require('googleapis');
 const cors = require("cors");
 const app = express();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const enviarFelicitacion = require ('./services/plantillasService');
-const vinculosJob = require('./jobs/vinculosCron');
-const enviarPlantilla = require('./jobs/plantillas'); // Importar la función
-const checkBirthdays = require('./jobs/birthdayCron'); // Importar el nuevo job
-const webhookRouter = require('./routes/webhook')
 
+// Jobs
+const checkBirthdays = require('./jobs/birthdayCron');
+const checkAppointments = require('./jobs/citaCron');
+
+// Configuración inicial
 conectarDB();
-
 app.use(cors());
-
 app.use(express.json());
 
+// Rutas
 app.use('/DentalArce', require('./routes/routes'));
-
+const webhookRouter = require('./routes/webhook')
 app.use('/webhook', webhookRouter);
 
-// vinculosJob();
+// Programación de tareas
+const cronOptions = {
+    timezone: "America/Mexico_City"
+};
 
-// cron.schedule('* * * * *', () => {
-//   console.log('Enviando mensaje de plantilla...');
-//   enviarPlantilla(); // Llamar a la función
-// });
-
-// verificación de cumpleaños diariamente a las 9 AM
+// Cumpleaños a las 9 AM
 cron.schedule('0 9 * * *', () => {
-  console.log('Verificando cumpleaños...');
-  checkBirthdays();
-}, {
-  timezone: "America/Mexico_City" // Ajusta la zona horaria según necesites
+    console.log('Verificando cumpleaños...');
+    checkBirthdays();
+}, cronOptions);
+
+// Recordatorios cada hora
+cron.schedule('* * * * *', () => {
+    console.log('Verificando recordatorios de citas...');
+    checkAppointments();
+}, cronOptions);
+
+// Endpoint de salud
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'healthy' });
 });
 
 
-// Start the Express server
-app.listen(5000, () => {
-  console.log('Server running at 5000')
-
+// Iniciar servidor
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running at ${PORT}`);
 });
