@@ -8,10 +8,13 @@ const pacienteController = require ('../controllers/pacienteController');
 const mensajeController = require ('../controllers/mensajeController');
 const pacienteCitaController = require('../controllers/pacienteCitaController');
 const stripeCheckout = require('../services/stripeCheckout')
-const pagoController = require ('../controllers/pagoController')
+const pagoController = require ('../controllers/pagoController');
 
-   
+
+
 router.post('/pagos/registro', pagoController.crearRegistroPago);
+router.post('/verificar-pago/:pagoId', pagoController.verificarEstadoPago);
+router.get('/pagos/verificar', pagoController.verificarEstadoPago);
 router.post('/pagos/webhook', express.raw({type: 'application/json'}), pagoController.webhookStripe);
 
 // Routes for calendar operations

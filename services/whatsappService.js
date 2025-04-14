@@ -44,4 +44,5 @@ const enviarMensajeWhatsApp = async (numeroPaciente, mensaje) => {
 
 };
 
+
 module.exports = enviarMensajeWhatsApp;

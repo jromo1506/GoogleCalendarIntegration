@@ -44,6 +44,8 @@ async function enviarMensajeWhatsApp(numero, mensaje) {
         return false;
     }
 }
+
+// Función para generar un pago
 exports.crearRegistroPago = async (req, res) => {
     const transactionId = uuidv4(); // ID único para tracking
     try {
@@ -72,8 +74,8 @@ exports.crearRegistroPago = async (req, res) => {
         // Configurar fechas
         const ahora = new Date();
         const limitePago = new Date(ahora);
-        limitePago.setDate(ahora.getDate() + 1);
-        limitePago.setHours(21, 0, 0, 0); // 9 PM del día siguiente
+        limitePago.setDate(ahora.getDate());
+        limitePago.setHours(22, 0, 0, 0); // 9 PM del día siguiente
 
         const recordatorioPago = new Date(limitePago);
         recordatorioPago.setHours(limitePago.getHours() - 5); // 5 horas antes
@@ -103,18 +105,20 @@ exports.crearRegistroPago = async (req, res) => {
             limitePago,
             monto: MONTO_FIJO,
             estado: 'pendiente',
-            sessionId: uuidv4(), // Generamos un sessionId inicial
-            paymentLinkId // ID único para el enlace de pago
+            sessionId: uuidv4(),
+            paymentLinkId
         });
 
-        // Generar el enlace de pago inmediatamente
         const paciente = await Paciente.findById(pacienteId);
 
         // 1. Crear producto en Stripe
         const producto = await stripe.products.create({
             name: `Consulta Dental - ${paciente.nombre || 'Paciente'}`,
             description: 'Consulta odontológica inicial',
-            metadata: { pacienteId: pacienteId.toString() }
+            metadata: {
+                pacienteId: pacienteId.toString(),
+                pagoId: nuevoPago._id.toString()
+            }
         });
 
         // 2. Crear precio
@@ -124,28 +128,35 @@ exports.crearRegistroPago = async (req, res) => {
             currency: 'mxn',
         });
 
-        // 3. Crear Payment Link
-        const paymentLink = await stripe.paymentLinks.create({
+        // 3. Crear Checkout Session con expiración
+        const session = await stripe.checkout.sessions.create({
             line_items: [{
                 price: precio.id,
                 quantity: 1,
             }],
+            mode: 'payment',
+            expires_at: Math.floor(limitePago.getTime() / 1000),
+            success_url: 'https://example.com/success',
+            cancel_url: 'https://example.com/cancel',
             metadata: {
                 pacienteId: pacienteId.toString(),
                 pagoId: nuevoPago._id.toString()
             }
         });
 
-        // Actualizar el pago con la URL generada
-        nuevoPago.urlPago = paymentLink.url;
-        nuevoPago.stripePaymentLinkId = paymentLink.id;
+        // Actualizar el pago con los datos de la sesión
+        nuevoPago.urlPago = session.url;
+        nuevoPago.stripeSessionId = session.id;
+        nuevoPago.stripeProductId = producto.id;
+        nuevoPago.stripePriceId = precio.id;
         await nuevoPago.save();
 
         log.success('Registro de pago creado con enlace de pago', {
             transactionId,
             pagoId: nuevoPago._id,
-            urlPago: paymentLink.url
+            urlPago: session.url
         });
+
 
         return res.status(201).json({
             ...nuevoPago.toObject(),
@@ -153,212 +164,184 @@ exports.crearRegistroPago = async (req, res) => {
         });
 
     } catch (error) {
-        log.error('Error en crearRegistroPago', {
+        log.error('Error al crear registro de pago', {
             transactionId,
-            error: {
-                message: error.message,
-                type: error.type,
-                code: error.code
-            }
+            error: error.message,
+            stack: error.stack
         });
         return res.status(500).json({
-            error: 'Error al crear registro',
-            transactionId,
-            detalle: process.env.NODE_ENV === 'development' ? error.message : null
-        });
-    }
-};
-
-//obtencion de link
-exports.obtenerDatosUsuarioYPago = async (req, res) => {
-    const transactionId = uuidv4();
-    try {
-        const { pacienteId, pacienteTel } = req.body;
-
-        log.info(`Obteniendo datos del usuario y pago`, { transactionId, pacienteId });
-
-        // Validación
-        if (!mongoose.Types.ObjectId.isValid(pacienteId)) {
-            log.warning('ID de paciente inválido', { transactionId, pacienteId });
-            return res.status(400).json({ error: 'ID de paciente inválido', transactionId });
-        }
-
-        // Obtener datos del paciente
-        const paciente = await Paciente.findById(pacienteId).lean();
-        if (!paciente) {
-            log.warning('Paciente no encontrado', { transactionId, pacienteId });
-            return res.status(404).json({ error: 'Paciente no encontrado', transactionId });
-        }
-
-        // Obtener el pago más reciente
-        const pago = await Pago.findOne({ pacienteId }).sort({ createdAt: -1 }).lean();
-
-        const ahora = new Date();
-        let recordatorioEnviado = false;
-        let pagoExpirado = false;
-        let pagoCompletado = false;
-
-        if (pago) {
-            // Verificar si el pago ya fue validado
-            if (pago.validadorPago) {
-                pagoCompletado = pago.estado === 'completado';
-                pagoExpirado = pago.estado === 'expirado';
-            } else {
-                // Si no está validado, verificar el estado actual
-                if (pago.limitePago < ahora) {
-                    // Pago expirado
-                    await Pago.updateOne({ _id: pago._id }, {
-                        estado: 'expirado',
-                        validadorPago: true
-                    });
-                    pagoExpirado = true;
-                } else if (pago.urlPago && pago.stripePaymentLinkId) {
-                    // Verificar con Stripe si el pago se completó
-                    try {
-                        const paymentLink = await stripe.paymentLinks.retrieve(pago.stripePaymentLinkId);
-                        if (paymentLink.payment_status === 'paid') {
-                            await Pago.updateOne({ _id: pago._id }, {
-                                estado: 'completado',
-                                validadorPago: true,
-                                fechaPago: new Date()
-                            });
-                            pagoCompletado = true;
-                        }
-                    } catch (error) {
-                        log.error('Error al verificar pago con Stripe', { error: error.message });
-                    }
-                }
-
-                // Enviar recordatorio si es necesario
-                if (!pago.recordatorioEnviado && pago.recordatorioPago <= ahora && pago.estado === 'pendiente') {
-                    const mensaje = `⏰ Recordatorio: Tienes hasta ${pago.limitePago.toLocaleString()} para completar tu pago. ${pago.urlPago}`;
-                    await enviarMensajeWhatsApp(pacienteTel, mensaje);
-                    await Pago.updateOne({ _id: pago._id }, { recordatorioEnviado: true });
-                    recordatorioEnviado = true;
-                }
-            }
-        }
-
-        // Preparar respuesta
-        const responseData = {
-            paciente: {
-                nombre: paciente.nombre,
-                apellidos: `${paciente.apeP} ${paciente.apeM}`.trim(),
-                telefono: paciente.telefonoWhatsapp,
-                correo: paciente.correoElectronico,
-                fechaNacimiento: paciente.fechaNac,
-                genero: paciente.genero
-            },
-            pago: pago ? {
-                estado: pagoExpirado ? 'expirado' : (pagoCompletado ? 'completado' : pago.estado),
-                monto: pago.monto / 100, // Convertir a pesos
-                urlPago: pago.urlPago,
-                fechaLimite: pago.limitePago,
-                fechaRecordatorio: pago.recordatorioPago,
-                recordatorioEnviado: pago.recordatorioEnviado || recordatorioEnviado
-            } : null,
-            alertas: {
-                recordatorioEnviado,
-                pagoExpirado,
-                pagoCompletado
-            },
+            error: 'Error interno al crear el registro de pago',
             transactionId
-        };
-
-        log.success('Datos obtenidos correctamente', { transactionId });
-        return res.status(200).json(responseData);
-
-    } catch (error) {
-        log.error('Error en obtenerDatosUsuarioYPago', {
-            transactionId,
-            error: {
-                message: error.message,
-                stack: error.stack
-            }
-        });
-        return res.status(500).json({
-            error: 'Error al obtener datos del usuario y pago',
-            transactionId,
-            detalle: process.env.NODE_ENV === 'development' ? error.message : null
         });
     }
 };
 
-exports.verificarYActualizarPago = async (req, res) => {
-    const transactionId = uuidv4();
+
+
+exports.verificarEstadoPago = async (req, res) => {
+    const transactionId = uuidv4(); // seguimiento
     try {
-        const { pacienteId } = req.body;
+        const { pagoId } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(pacienteId)) {
-            return res.status(400).json({ error: 'ID de paciente inválido', transactionId });
-        }
+        log.info('Verificando estado del pago', { transactionId, pagoId });
 
-        // Buscar el pago más reciente
-        const pago = await Pago.findOne({ pacienteId }).sort({ createdAt: -1 });
+        const pago = await Pago.findById(pagoId);
         if (!pago) {
-            return res.status(404).json({ error: 'No se encontraron pagos', transactionId });
+            log.warning('Pago no encontrado', { transactionId });
+            return res.status(404).json({ error: 'Pago no encontrado', transactionId });
         }
 
-        const ahora = new Date();
-        let estadoActualizado = pago.estado;
-        let flujo = 'espera';
+        if (!pago.stripeSessionId) {
+            log.warning('Pago sin sessionId de Stripe', { transactionId });
+            return res.status(400).json({ error: 'Pago sin sesión asociada', transactionId });
+        }
 
-        // Solo verificar si no ha sido validado antes
-        if (!pago.validadorPago) {
-            // Verificar si el pago expiró
-            if (pago.limitePago < ahora) {
-                estadoActualizado = 'expirado';
-                flujo = 'pago_expirado';
-            }
-            // Verificar con Stripe si hay un pago completado
-            else if (pago.stripePaymentLinkId) {
-                try {
-                    const paymentLink = await stripe.paymentLinks.retrieve(pago.stripePaymentLinkId);
-                    if (paymentLink.payment_status === 'paid') {
-                        estadoActualizado = 'completado';
-                        flujo = 'pago_completado';
-                    }
-                } catch (error) {
-                    log.error('Error al verificar pago con Stripe', error);
+        const session = await stripe.checkout.sessions.retrieve(pago.stripeSessionId);
+
+        let nuevoEstado = pago.estado;exports.crearRegistroPago = async (req, res) => {
+            const transactionId = uuidv4(); // ID único para tracking
+            try {
+                const { pacienteId, pacienteTel } = req.body;
+        
+                log.info(`Iniciando creación de registro de pago`, { transactionId, pacienteId });
+        
+                // Validación robusta
+                if (!mongoose.Types.ObjectId.isValid(pacienteId)) {
+                    log.warning('ID de paciente inválido', { transactionId, pacienteId });
+                    return res.status(400).json({ error: 'ID de paciente inválido', transactionId });
                 }
-            }
-
-            // Actualizar en base de datos si cambió el estado
-            if (estadoActualizado !== pago.estado) {
-                await Pago.updateOne({ _id: pago._id }, {
-                    estado: estadoActualizado,
-                    validadorPago: true,
-                    ...(estadoActualizado === 'completado' && { fechaPago: ahora })
+        
+                if (!pacienteTel || !/^\d{10,15}$/.test(pacienteTel)) {
+                    log.warning('Teléfono inválido', { transactionId, pacienteTel });
+                    return res.status(400).json({ error: 'Teléfono inválido', transactionId });
+                }
+        
+                const pacienteExiste = await Paciente.exists({ _id: pacienteId });
+                if (!pacienteExiste) {
+                    log.warning('Paciente no encontrado', { transactionId, pacienteId });
+                    return res.status(404).json({ error: 'Paciente no encontrado', transactionId });
+                }
+        
+                const ahora = new Date();
+                const limitePago = new Date(ahora);
+                limitePago.setHours(13, 30, 0, 0); // 1:30 PM hoy
+        
+                const recordatorioPago = new Date(limitePago);
+                recordatorioPago.setHours(limitePago.getHours() - 5);
+        
+                const pagoExistente = await Pago.findOne({
+                    pacienteId,
+                    estado: 'pendiente',
+                    limitePago: { $gt: ahora }
+                });
+        
+                if (pagoExistente) {
+                    log.warning('Pago pendiente existente', { transactionId, pagoId: pagoExistente._id });
+                    return res.status(200).json({
+                        ...pagoExistente.toObject(),
+                        transactionId,
+                        esExistente: true
+                    });
+                }
+        
+                const paciente = await Paciente.findById(pacienteId);
+        
+                const producto = await stripe.products.create({
+                    name: `Consulta Dental - ${paciente.nombre || 'Paciente'}`,
+                    description: 'Consulta odontológica inicial',
+                    metadata: {
+                        pacienteId: pacienteId.toString()
+                    }
+                });
+        
+                const precio = await stripe.prices.create({
+                    product: producto.id,
+                    unit_amount: MONTO_FIJO,
+                    currency: 'mxn',
+                });
+        
+                const session = await stripe.checkout.sessions.create({
+                    line_items: [{ price: precio.id, quantity: 1 }],
+                    mode: 'payment',
+                    expires_at: Math.floor(limitePago.getTime() / 1000),
+                    success_url: 'https://example.com/success',
+                    cancel_url: 'https://example.com/cancel',
+                    metadata: {
+                        pacienteId: pacienteId.toString()
+                    }
+                });
+        
+                // Crear el pago después de tener todos los datos de Stripe
+                const nuevoPago = await Pago.create({
+                    pacienteId,
+                    pacienteTel,
+                    recordatorioPago,
+                    limitePago,
+                    monto: MONTO_FIJO,
+                    estado: 'pendiente',
+                    paymentLinkId: uuidv4(),
+                    stripeSessionId: session.id,
+                    stripeProductId: producto.id,
+                    stripePriceId: precio.id,
+                    urlPago: session.url
+                });
+        
+                log.success('Registro de pago creado con enlace de pago', {
+                    transactionId,
+                    pagoId: nuevoPago._id,
+                    urlPago: session.url
+                });
+        
+                return res.status(201).json({
+                    ...nuevoPago.toObject(),
+                    transactionId
+                });
+        
+            } catch (error) {
+                log.error('Error al crear registro de pago', {
+                    transactionId,
+                    error: error.message,
+                    stack: error.stack
+                });
+                return res.status(500).json({
+                    error: 'Error interno al crear el registro de pago',
+                    transactionId
                 });
             }
+        };
+        
+
+        if (session.payment_status === 'paid') {
+            nuevoEstado = 'completado';
+        } else if (session.expires_at && session.expires_at * 1000 < Date.now()) {
+            nuevoEstado = 'expirado';
+        }
+
+        // Solo actualizar si cambió el estado
+        if (nuevoEstado !== pago.estado) {
+            pago.estado = nuevoEstado;
+            await pago.save();
+            log.success('Estado del pago actualizado', { transactionId, nuevoEstado });
         } else {
-            // Si ya estaba validado, determinar el flujo basado en el estado
-            flujo = pago.estado === 'completado' ? 'pago_completado' :
-                pago.estado === 'expirado' ? 'pago_expirado' : 'pago_pendiente';
+            log.info('El estado del pago no ha cambiado', { transactionId, estado: pago.estado });
         }
 
         return res.status(200).json({
-            estado: estadoActualizado,
-            flujo,
-            urlPago: pago.urlPago,
+            pagoId: pago._id,
+            estado: pago.estado,
             transactionId
         });
 
     } catch (error) {
-        log.error('Error en verificarYActualizarPago', {
+        log.error('Error al verificar estado del pago', {
             transactionId,
-            error: {
-                message: error.message,
-                stack: error.stack
-            }
+            error: error.message,
+            stack: error.stack
         });
-        return res.status(500).json({
-            error: 'Error al verificar pago',
-            transactionId,
-            detalle: process.env.NODE_ENV === 'development' ? error.message : null
-        });
+        return res.status(500).json({ error: 'Error interno al verificar estado del pago', transactionId });
     }
 };
+
 
 exports.webhookStripe = async (req, res) => {
     const sig = req.headers['stripe-signature'];
