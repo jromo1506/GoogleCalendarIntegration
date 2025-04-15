@@ -1,5 +1,5 @@
 const Paciente = require('../models/Paciente');
-const enviarFelicitacion = require('../services/plantillasService');
+const { enviarFelicitacion } = require('../services/plantillasService');
 
 const checkBirthdaysAndSendGreetings = async () => {
   try {

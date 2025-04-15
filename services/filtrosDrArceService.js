@@ -4,8 +4,11 @@ const filterSlotsByRules = (availableSlots) => {
   // Definir las reglas para cada día
   const rules = {
     martes: { start: "16:00", end: "20:00" },   // Martes: 4:00pm - 8:00pm
+    //4:00pm, 4:45pm, 5:30pm, 6:15pm, 7:00pm, 7:45pm
     miercoles: { start: "10:00", end: "14:00" }, // Miércoles: 10:00am - 2:00pm
+    //10:00am, 10:45am, 11:30am, 12:15am, 1:00pm, 1:45pm
     jueves: { start: "16:00", end: "20:00" }   // Jueves: 4:00pm - 8:00pm
+    //4:00pm, 4:45pm, 5:30pm, 6:15pm, 7:00pm, 7:45pm
   };
 
   const today = moment().format("dddd").toLowerCase(); // Obtener el día actual

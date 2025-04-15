@@ -1,5 +1,4 @@
 const PacienteCita = require('../models/PacienteCita');
-const Paciente = require('../models/Paciente');
 const { enviarRecordatorio } = require('../services/plantillasService');
 
 const checkAppointmentsAndSendReminders = async () => {
@@ -22,54 +21,39 @@ const checkAppointmentsAndSendReminders = async () => {
         // 3. Procesar cada cita pendiente
         for (const cita of citasPendientes) {
             try {
-                // Verificar que exista información del paciente
+                // Verificar paciente
                 if (!cita.pacienteId) {
                     console.log(`Cita ${cita._id} no tiene paciente asociado`);
                     continue;
                 }
 
                 const paciente = cita.pacienteId;
-
-                // Formatear nombre completo
                 const nombreCompleto = `${paciente.nombre} ${paciente.apeP} ${paciente.apeM}`;
                 const telefono = paciente.telefonoPaciente;
 
-                // Obtener fecha y hora de la cita (asumiendo que la primera cita en el array es la relevante)
-                const fechaCita = cita.idsCitas && cita.idsCitas.length > 0 ?
-                    new Date(cita.idsCitas[0].split('|')[1]) : null;
+                // Obtener hora actual de México
+                const horaMexico = new Date().toLocaleTimeString('es-MX', {
+                    timeZone: 'America/Mexico_City',
+                    hour12: true,
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
 
-                if (!fechaCita) {
-                    console.log(`No se pudo determinar la fecha de la cita para ${nombreCompleto}`);
-                    continue;
-                }
+                // Separar la hora y el indicador AM/PM
+                const [horaMinutos, ampm] = horaMexico.split(' ');
+                const [horas, minutos] = horaMinutos.split(':');
 
-                // Formatear hora en formato de 12 horas
-                let horas = fechaCita.getUTCHours(); // Usa getUTCHours() en lugar de getHours()
-                const minutos = fechaCita.getUTCMinutes().toString().padStart(2, '0');
-                const ampm = horas >= 12 ? 'pm' : 'am';
-                horas = horas % 12;
-                horas = horas ? horas : 12; // Convertir 0 a 12
-                const horaFormateada = `${horas}:${minutos}`;
+                console.log(`Enviando recordatorio a ${nombreCompleto}. Hora actual en México: ${horaMinutos} ${ampm}`);
 
-                console.log('Fecha UTC de la cita:', fechaCita.toISOString());
-                console.log('Hora UTC:', fechaCita.getUTCHours());
-                console.log('Minutos UTC:', fechaCita.getUTCMinutes()); 
-
-                    console.log(`Enviando recordatorio a ${nombreCompleto} (${telefono}) para la cita a las ${horaFormateada}${ampm}`);
-
-                // Enviar el recordatorio
-                const enviado = await enviarRecordatorio(telefono, nombreCompleto, horaFormateada, ampm);
+                // Enviar recordatorio
+                const enviado = await enviarRecordatorio(telefono, nombreCompleto, `${horas}:${minutos}`, ampm.toLowerCase());
 
                 if (enviado) {
-                    // Marcar como enviado en la base de datos
                     await PacienteCita.findByIdAndUpdate(cita._id, { enviado: true });
-                    console.log(`Recordatorio enviado con éxito a ${nombreCompleto}`);
-                } else {
-                    console.log(`Error al enviar recordatorio a ${nombreCompleto}`);
+                    console.log(`Recordatorio enviado a ${nombreCompleto}`);
                 }
-
             } catch (error) {
-                console.error(`Error al procesar cita ${cita._id}:`, error);
+                console.error(`Error procesando cita ${cita._id}:`, error);
             }
         }
 

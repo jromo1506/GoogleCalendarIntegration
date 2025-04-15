@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 
 const PacienteCitaSchema = new Schema({
-    
+
     pacienteId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Paciente',
@@ -10,21 +10,21 @@ const PacienteCitaSchema = new Schema({
     },
     idsCitas: [{
         type: String,
-        required:false
+        required: false
     }],
     recordatorioCita: {
-         type: String, 
-         required: false
+        type: Date,
+        required: false
     },
-    enviado:{
+    enviado: {
         type: Boolean,
         required: false
     }
 
 
-    
-   
+
+
 });
 
 
-module.exports = mongoose.model('PacienteCita',PacienteCitaSchema);
+module.exports = mongoose.model('PacienteCita', PacienteCitaSchema);

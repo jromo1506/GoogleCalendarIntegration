@@ -3,7 +3,7 @@ const Paciente = require('../models/Paciente')
 const Usuario = require('../models/Usuario'); // Asegúrate de que esta línea esté presente
 const Mensaje = require('../models/Mensaje');
 const MensajeDoctor = require('../models/MensajeDoctor');
-const enviarMensajeWhatsApp = require('../services/whatsappService');
+const { enviarMensajeWhatsApp } = require('../services/plantillasService');
 
 
 // Crear un nuevo mensaje
