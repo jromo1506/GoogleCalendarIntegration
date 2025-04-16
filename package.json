@@ -21,10 +21,14 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/uuid": "^10.0.0",
     "body-parser": "^1.20.3",
     "connect-multiparty": "^2.2.0",
     "cors": "^2.8.5",
-    "mongoose": "^8.13.2"
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.1.4",
+    "mongoose": "^8.13.2",
+    "supertest": "^7.1.0"
   }
 }

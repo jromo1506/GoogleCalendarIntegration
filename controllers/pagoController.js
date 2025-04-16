@@ -72,10 +72,15 @@ exports.crearRegistroPago = async (req, res) => {
         }
 
         // Configurar fechas
+        // Configurar fechas con lógica especial de expiración
         const ahora = new Date();
-        const limitePago = new Date(ahora);
-        limitePago.setDate(ahora.getDate());
-        limitePago.setHours(22, 0, 0, 0); // 9 PM del día siguiente
+        let limitePago = new Date(ahora);
+        limitePago.setHours(22, 0, 0, 0); // 10 PM de hoy
+
+        // Si la hora actual es 9 PM (21:00) o más, se pasa a 10 PM del día siguiente
+        if (ahora.getHours() >= 21) {
+            limitePago.setDate(limitePago.getDate() + 1);
+        }
 
         const recordatorioPago = new Date(limitePago);
         recordatorioPago.setHours(limitePago.getHours() - 5); // 5 horas antes
@@ -136,6 +141,7 @@ exports.crearRegistroPago = async (req, res) => {
             }],
             mode: 'payment',
             expires_at: Math.floor(limitePago.getTime() / 1000),
+            //cambiar a 'payment' de
             success_url: 'https://example.com/success',
             cancel_url: 'https://example.com/cancel',
             metadata: {
@@ -145,6 +151,7 @@ exports.crearRegistroPago = async (req, res) => {
         });
 
         // Actualizar el pago con los datos de la sesión
+        nuevoPago.id = session._id;
         nuevoPago.urlPago = session.url;
         nuevoPago.stripeSessionId = session.id;
         nuevoPago.stripeProductId = producto.id;
@@ -198,43 +205,43 @@ exports.verificarEstadoPago = async (req, res) => {
 
         const session = await stripe.checkout.sessions.retrieve(pago.stripeSessionId);
 
-        let nuevoEstado = pago.estado;exports.crearRegistroPago = async (req, res) => {
+        let nuevoEstado = pago.estado; exports.crearRegistroPago = async (req, res) => {
             const transactionId = uuidv4(); // ID único para tracking
             try {
                 const { pacienteId, pacienteTel } = req.body;
-        
+
                 log.info(`Iniciando creación de registro de pago`, { transactionId, pacienteId });
-        
+
                 // Validación robusta
                 if (!mongoose.Types.ObjectId.isValid(pacienteId)) {
                     log.warning('ID de paciente inválido', { transactionId, pacienteId });
                     return res.status(400).json({ error: 'ID de paciente inválido', transactionId });
                 }
-        
+
                 if (!pacienteTel || !/^\d{10,15}$/.test(pacienteTel)) {
                     log.warning('Teléfono inválido', { transactionId, pacienteTel });
                     return res.status(400).json({ error: 'Teléfono inválido', transactionId });
                 }
-        
+
                 const pacienteExiste = await Paciente.exists({ _id: pacienteId });
                 if (!pacienteExiste) {
                     log.warning('Paciente no encontrado', { transactionId, pacienteId });
                     return res.status(404).json({ error: 'Paciente no encontrado', transactionId });
                 }
-        
+
                 const ahora = new Date();
                 const limitePago = new Date(ahora);
                 limitePago.setHours(13, 30, 0, 0); // 1:30 PM hoy
-        
+
                 const recordatorioPago = new Date(limitePago);
                 recordatorioPago.setHours(limitePago.getHours() - 5);
-        
+
                 const pagoExistente = await Pago.findOne({
                     pacienteId,
                     estado: 'pendiente',
                     limitePago: { $gt: ahora }
                 });
-        
+
                 if (pagoExistente) {
                     log.warning('Pago pendiente existente', { transactionId, pagoId: pagoExistente._id });
                     return res.status(200).json({
@@ -243,9 +250,9 @@ exports.verificarEstadoPago = async (req, res) => {
                         esExistente: true
                     });
                 }
-        
+
                 const paciente = await Paciente.findById(pacienteId);
-        
+
                 const producto = await stripe.products.create({
                     name: `Consulta Dental - ${paciente.nombre || 'Paciente'}`,
                     description: 'Consulta odontológica inicial',
@@ -253,13 +260,13 @@ exports.verificarEstadoPago = async (req, res) => {
                         pacienteId: pacienteId.toString()
                     }
                 });
-        
+
                 const precio = await stripe.prices.create({
                     product: producto.id,
                     unit_amount: MONTO_FIJO,
                     currency: 'mxn',
                 });
-        
+
                 const session = await stripe.checkout.sessions.create({
                     line_items: [{ price: precio.id, quantity: 1 }],
                     mode: 'payment',
@@ -270,7 +277,7 @@ exports.verificarEstadoPago = async (req, res) => {
                         pacienteId: pacienteId.toString()
                     }
                 });
-        
+
                 // Crear el pago después de tener todos los datos de Stripe
                 const nuevoPago = await Pago.create({
                     pacienteId,
@@ -285,18 +292,18 @@ exports.verificarEstadoPago = async (req, res) => {
                     stripePriceId: precio.id,
                     urlPago: session.url
                 });
-        
+
                 log.success('Registro de pago creado con enlace de pago', {
                     transactionId,
                     pagoId: nuevoPago._id,
                     urlPago: session.url
                 });
-        
+
                 return res.status(201).json({
                     ...nuevoPago.toObject(),
                     transactionId
                 });
-        
+
             } catch (error) {
                 log.error('Error al crear registro de pago', {
                     transactionId,
@@ -309,7 +316,7 @@ exports.verificarEstadoPago = async (req, res) => {
                 });
             }
         };
-        
+
 
         if (session.payment_status === 'paid') {
             nuevoEstado = 'completado';
@@ -341,6 +348,66 @@ exports.verificarEstadoPago = async (req, res) => {
         return res.status(500).json({ error: 'Error interno al verificar estado del pago', transactionId });
     }
 };
+
+exports.rastrearPagoPorId = async (req, res) => {
+    const transactionId = uuidv4();
+    const { pagoId } = req.params;
+
+    try {
+        log.info('🔍 Rastreo de pago por ID', { transactionId, pagoId });
+
+        const pago = await Pago.findById(pagoId);
+        if (!pago) {
+            log.warning('Pago no encontrado', { transactionId, pagoId });
+            return res.status(404).json({ error: 'Pago no encontrado', transactionId });
+        }
+
+        if (!pago.stripeSessionId) {
+            log.warning('El pago no tiene sessionId de Stripe', { transactionId });
+            return res.status(400).json({ error: 'El pago no tiene sessionId de Stripe', transactionId });
+        }
+
+        const session = await stripe.checkout.sessions.retrieve(pago.stripeSessionId);
+        let estadoStripe = session.payment_status;
+        let actualizado = false;
+
+        if (estadoStripe === 'paid' && pago.estado !== 'completado') {
+            pago.estado = 'completado';
+            pago.validadorPago = true;
+            pago.fechaPago = new Date();
+            await pago.save();
+            actualizado = true;
+
+            // Enviar mensaje de confirmación
+            const mensaje = `✅ ¡Gracias por tu pago! Hemos registrado tu pago de $${(pago.monto / 100).toFixed(2)} MXN.`;
+            await enviarMensajeWhatsApp(pago.pacienteTel, mensaje);
+
+            log.success('🎉 Pago confirmado y actualizado', { transactionId, pagoId });
+        } else if (estadoStripe === 'unpaid' || session.expires_at * 1000 < Date.now()) {
+            pago.estado = 'expirado';
+            await pago.save();
+            actualizado = true;
+
+            log.warning('⏰ Pago expirado', { transactionId, pagoId });
+        }
+
+        return res.status(200).json({
+            pagoId: pago._id,
+            estado: pago.estado,
+            actualizado,
+            transactionId
+        });
+
+    } catch (error) {
+        log.error('❌ Error al rastrear el estado del pago', {
+            transactionId,
+            error: error.message,
+            stack: error.stack
+        });
+        return res.status(500).json({ error: 'Error interno al rastrear pago', transactionId });
+    }
+};
+
 
 
 exports.webhookStripe = async (req, res) => {

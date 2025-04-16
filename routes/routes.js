@@ -14,7 +14,7 @@ const pagoController = require ('../controllers/pagoController');
 
 router.post('/pagos/registro', pagoController.crearRegistroPago);
 router.post('/verificar-pago/:pagoId', pagoController.verificarEstadoPago);
-router.get('/pagos/verificar', pagoController.verificarEstadoPago);
+router.get('/verificar-pago/:pagoId', pagoController.verificarEstadoPago)
 router.post('/pagos/webhook', express.raw({type: 'application/json'}), pagoController.webhookStripe);
 
 // Routes for calendar operations

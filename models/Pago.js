@@ -32,7 +32,8 @@ const PagoSchema = new Schema({
     },
     stripeSessionId: {
         type: String,
-        unique: false
+        default: () => `temp_${new mongoose.Types.ObjectId()}`, // Valor temporal único
+        unique: true
     },
     monto: {
         type: Number,
