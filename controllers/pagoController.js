@@ -135,13 +135,14 @@ exports.crearRegistroPago = async (req, res) => {
 
         // 3. Crear Checkout Session con expiración
         const session = await stripe.checkout.sessions.create({
+            //agregar otros metodos pago
+            payment_method_types: ['card'], 
             line_items: [{
                 price: precio.id,
                 quantity: 1,
             }],
             mode: 'payment',
             expires_at: Math.floor(limitePago.getTime() / 1000),
-            //cambiar a 'payment' de
             success_url: 'https://example.com/success',
             cancel_url: 'https://example.com/cancel',
             metadata: {
