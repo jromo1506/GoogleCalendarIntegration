@@ -64,17 +64,57 @@ exports.eliminarPaciente = async (req, res) => {
 };
 
 
-exports.buscarPacientePorNumeroTelefonico = async(req,res)=>{
-    try{
+exports.buscarPacientePorNumeroTelefonico = async (req, res) => {
+    try {
         const numero = req.params.telefono;
-        const paciente = await Paciente.findOne({telefonoWhatsapp:numero});
-        if(!paciente){
-            return res.status(404).json({mensaje:"Paciente no encontrado"})
+        const paciente = await Paciente.findOne({ telefonoWhatsapp: numero });
+        if (!paciente) {
+            return res.status(404).json({ mensaje: "Paciente no encontrado" })
         }
         res.status(200).json(paciente);
     }
-    catch(error){
+    catch (error) {
         console.log(error);
-        return res.status(500).json({mensaje:"Error al encontrar pacientes",error:error.message})
+        return res.status(500).json({ mensaje: "Error al encontrar pacientes", error: error.message })
     }
 }
+
+// Guardar alergias
+exports.guardarAlergias = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { alergias } = req.body;
+
+        const pacienteActualizado = await Paciente.findByIdAndUpdate(
+            id,
+            { alergias },
+            { new: true }
+        );
+
+        if (!pacienteActualizado) return res.status(404).json({ message: 'Paciente no encontrado' });
+
+        res.json(pacienteActualizado);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al guardar alergias', error });
+    }
+};
+
+// Guardar medicamentos
+exports.guardarMedicamentos = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { medicamentos } = req.body;
+
+        const pacienteActualizado = await Paciente.findByIdAndUpdate(
+            id,
+            { medicamentos },
+            { new: true }
+        );
+
+        if (!pacienteActualizado) return res.status(404).json({ message: 'Paciente no encontrado' });
+
+        res.json(pacienteActualizado);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al guardar medicamentos', error });
+    }
+};

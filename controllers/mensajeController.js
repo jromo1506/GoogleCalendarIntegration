@@ -34,7 +34,7 @@ exports.getMensajes = async (req, res) => {
 
         // Obtener el usuario para obtener sus pacientes
         const usuario = await Usuario.findById(usuarioId); // Asegúrate de tener el modelo Usuario
-        
+
         if (!usuario) {
             return res.status(404).json({ mensaje: 'Usuario no encontrado' });
         }
@@ -59,7 +59,7 @@ exports.getMensajes = async (req, res) => {
 
 // Obtener un mensaje por ID
 exports.getMensajeById = async (req, res) => {
-    const {telefono,nombrePaciente,estado}=req.query;
+    const { telefono, nombrePaciente, estado } = req.query;
     const { id } = req.params;
 
     try {
@@ -156,23 +156,25 @@ exports.getMensajesFiltrados = async (req, res) => {
             search = '', // Búsqueda (valor opcional)
             sortBy = 'createdAt', // Campo para ordenar (por defecto, fecha de creación)
             sortOrder = 'desc', // Orden (asc o desc, por defecto descendente)
-            estado // Filtro por estado (opcional)
+            estado,// Filtro por estado (opcional)
+            telefono
         } = req.query;
 
         const { idPacientes } = req.body; // Array de IDs de pacientes recibido por POST
 
         // Construir el filtro de búsqueda
         const filters = {};
-   
+
         if (idPacientes && idPacientes.length > 0) {
             filters.idPaciente = { $in: idPacientes }; // Filtrar por los IDs del array
             console.log('Filtro aplicado:', filters);
         }
 
-        if (search) {
+        if (search || req.query.telefono) {
+            const searchTerm = search || req.query.telefono;
             filters.$or = [
-                { telefono: { $regex: search, $options: 'i' } }, // Búsqueda insensible a mayúsculas/minúsculas
-                { nombrePaciente: { $regex: search, $options: 'i' } }
+                { telefono: { $regex: searchTerm, $options: 'i' } },
+                { nombrePaciente: { $regex: searchTerm, $options: 'i' } }
             ];
         }
 
@@ -182,7 +184,7 @@ exports.getMensajesFiltrados = async (req, res) => {
 
         // Opciones de ordenación
         const options = {
-            sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 } // Ordenar resultados
+            sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 }
         };
 
         // Realizar la consulta
@@ -195,17 +197,17 @@ exports.getMensajesFiltrados = async (req, res) => {
 };
 
 
-exports.getMensajesByIdPaciente = async(req,res) => {
-    try{
-        const {idPaciente} = req.params;
-        const mensajes = await Mensajes.find({idPaciente});
-        if(mensajes.length === 0){
-           return res.status(400).json([]);
+exports.getMensajesByIdPaciente = async (req, res) => {
+    try {
+        const { idPaciente } = req.params;
+        const mensajes = await Mensajes.find({ idPaciente });
+        if (mensajes.length === 0) {
+            return res.status(400).json([]);
         }
         res.status(200).json(mensajes);
     }
-    catch(error){
-        res.status(500).json({mensaje:"Error al obtener los chats del usuario",error})
+    catch (error) {
+        res.status(500).json({ mensaje: "Error al obtener los chats del usuario", error })
     }
 }
 
@@ -240,12 +242,42 @@ exports.addMensajeDoctor = async (req, res) => {
     }
 };
 
-  exports.getMensajesDoctor = async (req, res) => {
+exports.getMensajesDoctor = async (req, res) => {
     try {
-      const { idDoctor, idPaciente } = req.query;
-      const mensajes = await MensajeDoctor.find({ idDoctor, idPaciente });
-      res.status(200).json(mensajes);
+        const { idDoctor, idPaciente } = req.query;
+        const mensajes = await MensajeDoctor.find({ idDoctor, idPaciente });
+        res.status(200).json(mensajes);
     } catch (error) {
-      res.status(500).json({ mensaje: 'Error al obtener los mensajes del doctor', error: error.message });
+        res.status(500).json({ mensaje: 'Error al obtener los mensajes del doctor', error: error.message });
     }
-  };
+};
+
+
+//obtener los mensajes por numero para filtros
+exports.getMensajesByTelefono = async (req, res) => {
+    const { telefono } = req.params;
+    const { nombrePaciente, estado } = req.query;
+
+    try {
+        // Construir el filtro de búsqueda dinámicamente
+        const filtro = { telefono };
+
+        if (nombrePaciente) {
+            filtro.nombrePaciente = nombrePaciente;
+        }
+
+        if (estado) {
+            filtro.estado = estado;
+        }
+
+        const mensajes = await Mensaje.find(filtro);
+
+        if (!mensajes.length) {
+            return res.status(404).json({ mensaje: 'No se encontraron mensajes con ese teléfono' });
+        }
+
+        res.status(200).json(mensajes);
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al obtener los mensajes', error: error.message });
+    }
+};

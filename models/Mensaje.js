@@ -31,7 +31,7 @@ const MensajeSchema = new mongoose.Schema({
         required:true
     }
     
-});
+},{ timestamps: true });
 
 const Mensaje = mongoose.model('Mensaje', MensajeSchema);
 module.exports = Mensaje

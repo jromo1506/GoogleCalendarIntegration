@@ -47,7 +47,7 @@ router.delete('/citas/:id', citasController.eliminarCita);
 router.post('/paciente', pacienteController.crearPaciente);
 router.get('/pacientes', pacienteController.obtenerPacientes);
 router.get('/paciente/:id', pacienteController.obtenerPacientePorId);
-router.put('/paciente/:id', pacienteController.actualizarPaciente);
+router.put('/paciente/:id', pacienteController.actualizarPaciente);  
 router.delete('/paciente/:id', pacienteController.eliminarPaciente);
 router.get('/buscarPacientePorTelefono/:telefono',pacienteController.buscarPacientePorNumeroTelefonico);
 router.post('/addPaciente');
@@ -61,6 +61,8 @@ router.get('/mensajes/usuario/:usuarioId', mensajeController.getMensajesPorUsuar
 router.get('/getMensajesByIdPaciente/:idPaciente',mensajeController.getMensajesByIdPaciente);
 router.post('/addMensajeDoctor', mensajeController.addMensajeDoctor);
 router.get('/getMensajesDoctor', mensajeController.getMensajesDoctor);
+router.get('/getMensajesByTelefono/:telefono', mensajeController.getMensajesByTelefono);
+
 
 router.post('/vincularPacienteCita', pacienteCitaController.vincularPacienteCita);
 router.post('/subirVariasCitas',pacienteCitaController.subirVariasCitas);

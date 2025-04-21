@@ -40,8 +40,7 @@ const PagoSchema = new Schema({
         default: 75000 // $750 MXN
     },
     urlPago:{
-        type:String,
-        required: true
+        type:String
     },
     estado: {
         type: String,
