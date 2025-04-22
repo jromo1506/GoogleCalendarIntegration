@@ -51,6 +51,8 @@ router.put('/paciente/:id', pacienteController.actualizarPaciente);
 router.delete('/paciente/:id', pacienteController.eliminarPaciente);
 router.get('/buscarPacientePorTelefono/:telefono',pacienteController.buscarPacientePorNumeroTelefonico);
 router.post('/addPaciente');
+router.put('/paciente/:id/medicamentos', pacienteController.guardarMedicamentos);
+router.put('/paciente/:id/alergias', pacienteController.guardarAlergias);
 
 
 router.post('/addMensaje',mensajeController.addMensaje);
