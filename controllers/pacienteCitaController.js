@@ -14,7 +14,10 @@ exports.vincularPacienteCita = async (req, res) => {
             pacienteId: vinculo.pacienteId,
             idsCitas: vinculo.idsCitas || [], // Asegura que sea un array (evita undefined)
             recordatorioCita:  vinculo.recordatorioCita, // Fecha con un día adicional
-            enviado: vinculo.enviado || false
+            enviado: vinculo.enviado || false,
+            recordatorioCitaDiciembre:  vinculo.recordatorioCitaDiciembre, // Fecha sin un dia adicional
+            enviadoCitaDiciembre: vinculo.enviadoCitaDiciembre || false
+
         });
 
         const citaGuardada = await nuevaCita.save();
