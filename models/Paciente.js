@@ -82,10 +82,12 @@ const PacienteSchema = new mongoose.Schema({
     // Datos complementarios front end
     medicamentos: {
         type: String,
+        default: '' ,
         required: false
     },
     alergias: {
         type: String,
+        default: '' ,
         required: false
     },
     idDoctor: {
