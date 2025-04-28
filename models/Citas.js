@@ -31,6 +31,10 @@ const CitasSchema = new Schema({
     realizo:{
         type:String,
         required:false
+    },
+    fechaCita:{
+        type:Date,
+        required:false
     }
 });
 
