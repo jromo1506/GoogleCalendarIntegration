@@ -12,7 +12,6 @@ exports.crearPaciente = async (req, res) => {
 };
 
 // Obtener todos los pacientes
-// Obtener todos los pacientes
 exports.obtenerPacientes = async (req, res) => {
     try {
         console.error("Testing deploy");

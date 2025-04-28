@@ -7,7 +7,7 @@ const PacienteSchema = new mongoose.Schema({
     },
     telefonoWhatsapp: {
         type: Number,
-        required: true,
+        required: false,
     },
     telefonoPaciente: {
         type: Number,
