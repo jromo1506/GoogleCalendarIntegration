@@ -3,13 +3,13 @@ const Citas = require('../models/Citas');
 // Crear una nueva cita
 exports.crearCita = async (req, res) => {
     try {
-        const { pacienteId, tratamiento, observaciones, pago, realizo, horaInicio, horaFin } = req.body;
+        const { pacienteId, tratamiento, observaciones, pago, realizo, horaInicio, horaFin, fechaCita} = req.body;
         
         if (!pacienteId) {
             return res.status(400).json({ mensaje: 'El pacienteId es requerido' });
         }
 
-        const nuevaCita = new Citas({ pacienteId, tratamiento, observaciones, pago, realizo, horaInicio, horaFin });
+        const nuevaCita = new Citas({ pacienteId, tratamiento, observaciones, pago, realizo, horaInicio, horaFin, fechaCita });
         const citaGuardada = await nuevaCita.save();
         res.status(201).json(citaGuardada);
     } catch (error) {
