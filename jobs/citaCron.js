@@ -3,25 +3,26 @@ const { enviarRecordatorio } = require('../services/plantillasService');
 
 const checkAppointmentsAndSendReminders = async () => {
     try {
-        // 1. Obtener la fecha y hora actual con margen
-        const now = new Date();
-        const margen = 5 * 60 * 1000; // 5 minutos de margen
-
-        // 2. Buscar citas cuyo recordatorio debe enviarse ahora y que no hayan sido enviadas
+        // 1. Obtener la fecha actual (sin hora)
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); // Establecer a medianoche para comparar solo días
+        
+        // 2. Buscar citas cuyo recordatorio sea hoy y no hayan sido enviadas
         const citasPendientes = await PacienteCita.find({
-            recordatorioCita: {
-                $lte: new Date(now.getTime() + margen),
-                $gte: new Date(now.getTime() - margen)
+            $expr: {
+                $eq: [
+                    { $dateToString: { format: "%Y-%m-%d", date: "$recordatorioCita" } },
+                    { $dateToString: { format: "%Y-%m-%d", date: hoy } }
+                ]
             },
-            enviado: { $ne: true } // Solo citas no enviadas
+            enviado: { $ne: true }
         }).populate('pacienteId');
 
-        console.log(`Encontradas ${citasPendientes.length} citas con recordatorios pendientes`);
+        console.log(`Encontradas ${citasPendientes.length} citas con recordatorios para hoy`);
 
         // 3. Procesar cada cita pendiente
         for (const cita of citasPendientes) {
             try {
-                // Verificar paciente
                 if (!cita.pacienteId) {
                     console.log(`Cita ${cita._id} no tiene paciente asociado`);
                     continue;
@@ -31,22 +32,16 @@ const checkAppointmentsAndSendReminders = async () => {
                 const nombreCompleto = `${paciente.nombre} ${paciente.apeP} ${paciente.apeM}`;
                 const telefono = paciente.telefonoPaciente;
 
-                // Obtener hora actual de México
-                const horaMexico = new Date().toLocaleTimeString('es-MX', {
-                    timeZone: 'America/Mexico_City',
-                    hour12: true,
-                    hour: 'numeric',
-                    minute: '2-digit'
-                });
+                console.log(`Enviando recordatorio a ${nombreCompleto} para cita del ${cita.fechaCita}`);
 
-                // Separar la hora y el indicador AM/PM
-                const [horaMinutos, ampm] = horaMexico.split(' ');
-                const [horas, minutos] = horaMinutos.split(':');
-
-                console.log(`Enviando recordatorio a ${nombreCompleto}. Hora actual en México: ${horaMinutos} ${ampm}`);
-
-                // Enviar recordatorio
-                const enviado = await enviarRecordatorio(telefono, nombreCompleto, `${horas}:${minutos}`, ampm.toLowerCase());
+                // Enviar recordatorio con todos los datos necesarios
+                const enviado = await enviarRecordatorio(
+                    telefono, 
+                    nombreCompleto, 
+                    cita.fechaCita, 
+                    cita.horaCita, 
+                    cita.ampm
+                );
 
                 if (enviado) {
                     await PacienteCita.findByIdAndUpdate(cita._id, { enviado: true });

@@ -7,17 +7,15 @@ exports.vincularPacienteCita = async (req, res) => {
     console.log("Datos recibidos:", vinculo);
 
     try {
-      
-
         // Crear la cita con los datos correctos
         const nuevaCita = new PacienteCita({
             pacienteId: vinculo.pacienteId,
             idsCitas: vinculo.idsCitas || [], // Asegura que sea un array (evita undefined)
-            recordatorioCita:  vinculo.recordatorioCita, // Fecha con un día adicional
+            recordatorioCita:  vinculo.recordatorioCita, // Fecha con dos dias menos a la cita
+            fechaCita: vinculo.fechaCita,
+            horaCita: vinculo.horaCita,
+            ampm: vinculo.ampm,
             enviado: vinculo.enviado || false,
-            recordatorioCitaDiciembre:  vinculo.recordatorioCitaDiciembre, // Fecha sin un dia adicional
-            enviadoCitaDiciembre: vinculo.enviadoCitaDiciembre || false
-
         });
 
         const citaGuardada = await nuevaCita.save();

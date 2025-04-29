@@ -22,7 +22,7 @@ app.get('/health', (req, res) => {
 });
 
 // Jobs
-// AllJobs();
+AllJobs();
 
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;

@@ -44,7 +44,7 @@ const enviarFelicitacion = async (numeroPaciente, nombrepaciente) => {
 
 };
 
-const enviarRecordatorio = async (numeroPaciente, nombrePaciente, horaCita, ampm) => {
+const enviarRecordatorio = async (numeroPaciente, nombrePaciente, fechaCita, horaCita, ampm) => {
     // Limpiar el número de teléfono (eliminar prefijo '52' si existe)
     const telefono = numeroPaciente.toString().replace(/^52/, '');
     
@@ -67,6 +67,10 @@ const enviarRecordatorio = async (numeroPaciente, nombrePaciente, horaCita, ampm
                         {
                             type: "text",
                             text: nombrePaciente
+                        },
+                        {
+                            type: "text",
+                            text: fechaCita
                         },
                         {
                             type: "text",
