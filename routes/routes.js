@@ -9,9 +9,19 @@ const mensajeController = require ('../controllers/mensajeController');
 const pacienteCitaController = require('../controllers/pacienteCitaController');
 const stripeCheckout = require('../services/stripeCheckout')
 const pagoController = require ('../controllers/pagoController');
+const listaNegraController = require ('../controllers/listaNegraController')
 
 
 
+//rutas ListaNegra
+router.post('/lista-negra', listaNegraController.agregarAListaNegra);
+router.get('/lista-negra', listaNegraController.obtenerListaNegra);
+router.get('/lista-negra/:id', listaNegraController.obtenerEntradaListaNegra);
+router.put('/lista-negra/:id', listaNegraController.actualizarEntradaListaNegra);
+router.delete('/lista-negra/:id', listaNegraController.eliminarEntradaListaNegra);
+router.get('/lista-negra/verificar-paciente/:pacienteId', listaNegraController.verificarPacienteListaNegra);
+
+//rutas para pagos
 router.post('/pagos/registro', pagoController.crearRegistroPago);
 router.post('/verificar-pago/:pagoId', pagoController.verificarEstadoPago);
 router.get('/verificar-pago/:pagoId', pagoController.verificarEstadoPago)
@@ -64,7 +74,7 @@ router.get('/getMensajesByIdPaciente/:idPaciente',mensajeController.getMensajesB
 router.post('/addMensajeDoctor', mensajeController.addMensajeDoctor);
 router.get('/getMensajesDoctor', mensajeController.getMensajesDoctor);
 router.get('/getMensajesByTelefono/:telefono', mensajeController.getMensajesByTelefono);
-
+router.post('/mensajes/marcar-atendidos', mensajeController.actualizarEstadoMensaje);
 
 router.post('/vincularPacienteCita', pacienteCitaController.vincularPacienteCita);
 router.post('/subirVariasCitas',pacienteCitaController.subirVariasCitas);
