@@ -45,11 +45,6 @@ const PacienteSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    //Mover motivoVisita a Paciente cita 
-    motivoVisita: {
-        type: String,
-        required: true,
-    },
     nombreTutor: {
         type: String,
         required: false,
