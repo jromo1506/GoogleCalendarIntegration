@@ -281,3 +281,28 @@ exports.getMensajesByTelefono = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al obtener los mensajes', error: error.message });
     }
 };
+
+exports.actualizarEstadoMensaje = async (req, res) => {
+    try {
+        const { mensajeId } = req.body;
+
+        if (!mensajeId) {
+            return res.status(400).json({ message: 'Falta mensajeId en el cuerpo de la petición' });
+        }
+
+        const mensajeActualizado = await Mensaje.findByIdAndUpdate(
+            mensajeId,
+            { estado: 'atendido' },
+            { new: true }
+        );
+
+        if (!mensajeActualizado) {
+            return res.status(404).json({ message: 'Mensaje no encontrado' });
+        }
+
+        res.status(200).json({ message: 'Mensaje actualizado a atendido', mensaje: mensajeActualizado });
+    } catch (error) {
+        console.error('Error al actualizar el mensaje:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
