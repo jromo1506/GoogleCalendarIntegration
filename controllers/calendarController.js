@@ -268,56 +268,6 @@ exports.crearCitaCV = async (req, res) => {
 };
 
 
-// CONFUGRACIONES PARA CHECAR SI HAY DIAS OCUPADOS
-/*
-6: Domingo
-0: Lunes
-1: Martes
-2: Miércoles
-3: Jueves
-4: Viernes
-5: Sábado
-*/
-
-
-const calculateWeekRange = (rangeConfig) => {
-  const today = new Date();
-  const dayOfWeek = today.getDay(); // Día de la semana (0 = domingo, 6 = sábado)
-
-  // Calcular el inicio de la semana (lunes)
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Siempre empieza en lunes
-  
-  let endOfRange;
-
-  switch (rangeConfig) {
-    case "1 semana":
-      endOfRange = new Date(startOfWeek);
-      endOfRange.setDate(startOfWeek.getDate() + 6); // Termina el domingo
-      break;
-
-    case "2 semanas":
-      endOfRange = new Date(startOfWeek);
-      endOfRange.setDate(startOfWeek.getDate() + 13); // Dos semanas (hasta el domingo)
-      break;
-
-    case "1 mes":
-      endOfRange = new Date(startOfWeek);
-      endOfRange.setMonth(startOfWeek.getMonth() + 1); // Un mes desde el inicio de la semana
-      break;
-
-    default:
-      throw new Error("Configuración de rango no válida");
-  }
-
-  return {
-    start: startOfWeek.toISOString().split("T")[0],
-    end: endOfRange.toISOString().split("T")[0]
-  };
-};
-
-
-
 const getTwoWeeksRange = () => {
   const today = new Date();
   const startOfRange = new Date(today);

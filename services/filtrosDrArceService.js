@@ -16,13 +16,27 @@ const filterSlotsByRules = (availableSlots) => {
   let showNextWeek = [];
 
   if (todayName === "monday") {
-    showCurrentWeek = ["miercoles", "jueves"];
-  } else if (todayName === "tuesday") {
+    // Lunes: mostrar Jueves de esta semana y Martes de la siguiente
     showCurrentWeek = ["jueves"];
     showNextWeek = ["martes"];
-  } else {
-    // miércoles a domingo
+  } else if (todayName === "tuesday") {
+    // Martes: mostrar Martes y Miércoles de la siguiente semana
     showNextWeek = ["martes", "miercoles"];
+  } else if (todayName === "wednesday") {
+    // Miércoles: mostrar Martes y Miércoles de la siguiente semana
+    showNextWeek = ["martes", "miercoles"];
+  } else if (todayName === "thursday") {
+    // Jueves: mostrar Martes y Miércoles de la siguiente semana
+    showNextWeek = ["martes", "miercoles"];
+  } else if (todayName === "friday") {
+    // Viernes: mostrar Martes y Miércoles de la siguiente semana
+    showNextWeek = ["martes", "miercoles"];
+  } else if (todayName === "saturday") {
+    // Sábado: mostrar Martes y Miércoles de la siguiente semana
+    showNextWeek = ["martes", "miercoles"];
+  } else if (todayName === "sunday") {
+    // Domingo: mostrar Miércoles y Jueves de la siguiente semana
+    showNextWeek = ["miercoles", "jueves"];
   }
 
   // Filtrar slots según las reglas
