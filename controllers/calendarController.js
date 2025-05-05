@@ -268,26 +268,6 @@ exports.crearCitaCV = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // CONFUGRACIONES PARA CHECAR SI HAY DIAS OCUPADOS
 /*
 6: Domingo
@@ -304,25 +284,21 @@ const calculateWeekRange = (rangeConfig) => {
   const today = new Date();
   const dayOfWeek = today.getDay(); // Día de la semana (0 = domingo, 6 = sábado)
 
-  // Calcular el inicio de la semana (domingo anterior o hoy si es domingo)
+  // Calcular el inicio de la semana (lunes)
   const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - dayOfWeek);
+  startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Siempre empieza en lunes
   
-  // console.log("Hoy:", today.toISOString().split("T")[0]);
-  // console.log("Día de la semana (hoy):", dayOfWeek);
-  // console.log("Inicio de la semana (domingo):", startOfWeek.toISOString().split("T")[0]);
-
   let endOfRange;
 
   switch (rangeConfig) {
     case "1 semana":
       endOfRange = new Date(startOfWeek);
-      endOfRange.setDate(startOfWeek.getDate() + 6); // Termina el sábado
+      endOfRange.setDate(startOfWeek.getDate() + 6); // Termina el domingo
       break;
 
     case "2 semanas":
       endOfRange = new Date(startOfWeek);
-      endOfRange.setDate(startOfWeek.getDate() + 13); // Dos semanas (hasta el sábado)
+      endOfRange.setDate(startOfWeek.getDate() + 13); // Dos semanas (hasta el domingo)
       break;
 
     case "1 mes":
@@ -334,22 +310,37 @@ const calculateWeekRange = (rangeConfig) => {
       throw new Error("Configuración de rango no válida");
   }
 
-  console.log("Fin del rango:", endOfRange.toISOString().split("T")[0]);
+  return {
+    start: startOfWeek.toISOString().split("T")[0],
+    end: endOfRange.toISOString().split("T")[0]
+  };
+};
 
+
+
+const getTwoWeeksRange = () => {
+  const today = new Date();
+  const startOfRange = new Date(today);
+  
+  // Si es domingo, empezamos desde hoy, sino desde el lunes anterior
+  if (today.getDay() !== 0) {
+    startOfRange.setDate(today.getDate() - (today.getDay() - 1));
+  }
+  
+  const endOfRange = new Date(startOfRange);
+  endOfRange.setDate(startOfRange.getDate() + 13); // 2 semanas completas (14 días)
 
   return {
-    start: startOfWeek.toISOString().split("T")[0], // Fecha de inicio en formato YYYY-MM-DD
-    end: endOfRange.toISOString().split("T")[0]     // Fecha de fin en formato YYYY-MM-DD
+    start: startOfRange.toISOString().split("T")[0],
+    end: endOfRange.toISOString().split("T")[0]
   };
 };
 
 const config = {
-  daysOfWeek: [1,2,3],
-  timeRange: { start: "10:00", end: "20:00" }, // Horario: de 8:00 AM a 8:00 PM
-  dateRange: calculateWeekRange("1 semana")  // Rango de fechas
+  daysOfWeek: [1, 2, 3], // Martes, Miércoles, Jueves
+  timeRange: { start: "10:00", end: "20:00" },
+  dateRange: getTwoWeeksRange()  // Nueva función específica para 2 semanas
 };
-
-
 
 const getBusyEvents = async (calendarId, timeMin, timeMax) => {
   const response = await calendarService.events.list({
@@ -374,7 +365,6 @@ const incrementTime = (time, incrementMinutes) => {
   return `${newHour.toString().padStart(2, "0")}:${newMinute.toString().padStart(2, "0")}`;
 };
 
-// Función para generar horarios disponibles con bloques de 45 minutos
 // Función para generar horarios disponibles con bloques de 45 minutos
 const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) => {
   const { start, end } = dateRange;

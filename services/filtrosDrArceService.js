@@ -1,39 +1,47 @@
 const moment = require("moment");
 
 const filterSlotsByRules = (availableSlots) => {
-  // Definir las reglas para cada día
   const rules = {
-    martes: { start: "16:00", end: "20:00" },   // Martes: 4:00pm - 8:00pm
-    //4:00pm, 4:45pm, 5:30pm, 6:15pm, 7:00pm, 7:45pm
-    miercoles: { start: "10:00", end: "14:00" }, // Miércoles: 10:00am - 2:00pm
-    //10:00am, 10:45am, 11:30am, 12:15am, 1:00pm, 1:45pm
-    jueves: { start: "16:00", end: "20:00" }   // Jueves: 4:00pm - 8:00pm
-    //4:00pm, 4:45pm, 5:30pm, 6:15pm, 7:00pm, 7:45pm
+    martes: { start: "16:00", end: "20:00" },
+    miercoles: { start: "10:00", end: "14:00" },
+    jueves: { start: "16:00", end: "20:00" }
   };
 
-  const today = moment().format("dddd").toLowerCase(); // Obtener el día actual
-  console.log("Día actual detectado:", today);
+  const today = moment();
+  const todayName = today.format("dddd").toLowerCase();
+  console.log("Día actual detectado:", todayName);
 
-  let validDays = [];
+  // Determinar qué días mostrar según el día actual
+  let showCurrentWeek = [];
+  let showNextWeek = [];
 
-  if (today === "monday") {
-    validDays = ["miercoles", "jueves"];
-  } else if (today === "tuesday") {
-    validDays = ["jueves"];
-  } else if (["wednesday", "thursday", "friday", "saturday", "sunday"].includes(today)) {
-    validDays = ["martes", "miercoles", "jueves"];
-    availableSlots = availableSlots.map(slot => {
-      let slotDate = moment(slot.date);
-      if (slotDate.isBefore(moment().add(4, "days"), "week")) {
-        slotDate = slotDate.add(1, "week");
-      }
-      return { ...slot, date: slotDate.format("YYYY-MM-DD") };
-    });
+  if (todayName === "monday") {
+    showCurrentWeek = ["miercoles", "jueves"];
+  } else if (todayName === "tuesday") {
+    showCurrentWeek = ["jueves"];
+    showNextWeek = ["martes"];
+  } else {
+    // miércoles a domingo
+    showNextWeek = ["martes", "miercoles"];
   }
 
+  // Filtrar slots según las reglas
   const filteredSlots = availableSlots.filter(slot => {
-    const { day, start, end } = slot;
-    return validDays.includes(day) && rules[day] && start >= rules[day].start && end <= rules[day].end;
+    const slotDate = moment(slot.date);
+    const isNextWeek = slotDate.isAfter(today.endOf('week'));
+    const dayRules = rules[slot.day];
+    
+    // Verificar si el slot cumple con las reglas horarias
+    const validTime = dayRules && 
+                     slot.start >= dayRules.start && 
+                     slot.end <= dayRules.end;
+    
+    // Verificar si pertenece a la semana que debe mostrarse
+    if (isNextWeek) {
+      return showNextWeek.includes(slot.day) && validTime;
+    } else {
+      return showCurrentWeek.includes(slot.day) && validTime;
+    }
   });
 
   return filteredSlots;
