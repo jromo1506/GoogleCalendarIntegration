@@ -117,3 +117,33 @@ exports.guardarMedicamentos = async (req, res) => {
         res.status(500).json({ message: 'Error al guardar medicamentos', error });
     }
 };
+
+//obtener por lista negra
+exports.obtenerPacientesEnListaNegra = async (req, res) => {
+    try {
+        const pacientesEnListaNegra = await Paciente.find({ enListaNegra: true });
+        res.status(200).json(pacientesEnListaNegra);
+    } catch (error) {
+        console.error('Error al obtener pacientes en lista negra:', error);
+        res.status(500).json({ mensaje: 'Error al obtener los pacientes en lista negra.' });
+    }
+};
+
+exports.verificarPacienteEnListaNegra = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const paciente = await Paciente.findById(id);
+
+        if (!paciente) {
+            return res.status(404).json({ mensaje: 'Paciente no encontrado' });
+        }
+
+        const estaEnListaNegra = paciente.enListaNegra === true;
+
+        res.status(200).json({ enListaNegra: estaEnListaNegra });
+    } catch (error) {
+        console.error('Error al verificar lista negra:', error);
+        res.status(500).json({ mensaje: 'Error al verificar el estado en lista negra' });
+    }
+};
