@@ -18,8 +18,10 @@ router.post('/lista-negra', listaNegraController.agregarAListaNegra);
 router.get('/lista-negra', listaNegraController.obtenerListaNegra);
 router.get('/lista-negra/:id', listaNegraController.obtenerEntradaListaNegra);
 router.put('/lista-negra/:id', listaNegraController.actualizarEntradaListaNegra);
-router.delete('/lista-negra/:id', listaNegraController.eliminarEntradaListaNegra);
 router.get('/lista-negra/verificar-paciente/:pacienteId', listaNegraController.verificarPacienteListaNegra);
+router.get('/lista-negra-filtrada', listaNegraController.obtenerListaFiltrada);
+router.get('/lista-negra/paciente/:pacienteId', listaNegraController.buscarPorPacienteId);
+router.delete('/lista-negra/remover/:pacienteId', listaNegraController.removerDeListaNegra);
 
 //rutas para pagos
 router.post('/pagos/registro', pagoController.crearRegistroPago);
@@ -63,6 +65,8 @@ router.get('/buscarPacientePorTelefono/:telefono',pacienteController.buscarPacie
 router.post('/addPaciente');
 router.put('/paciente/:id/medicamentos', pacienteController.guardarMedicamentos);
 router.put('/paciente/:id/alergias', pacienteController.guardarAlergias);
+router.get('/pacientes/lista-negra', pacienteController.obtenerPacientesEnListaNegra)
+router.get('/paciente/:id/en-lista-negra', pacienteController.verificarPacienteEnListaNegra);
 
 
 router.post('/addMensaje',mensajeController.addMensaje);

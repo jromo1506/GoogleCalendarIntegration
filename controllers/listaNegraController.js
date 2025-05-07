@@ -1,32 +1,39 @@
-const Usuario = require('../models/Usuario')
+const Usuario = require('../models/Usuario');
 const Paciente = require('../models/Paciente');
 const ListaNegra = require('../models/listaNegra');
 
 // Crear una nueva entrada en lista negra
 exports.agregarAListaNegra = async (req, res) => {
    try {
-      const { paciente, razon, detalles, tipo, evidencia } = req.body;
-      const agregadoPor = req.user._id; // Asumiendo que usas autenticación
-      
+      const { pacienteId, razon, detalles, tipo, evidencia, agregadoPor } = req.body;
+
+      if (!agregadoPor) {
+         return res.status(400).json({ error: 'ID del usuario que agrega es requerido' });
+      }
+
       // Verificar si el paciente existe
-      const pacienteExiste = await Paciente.findById(paciente);
+      const pacienteExiste = await Paciente.findById(pacienteId);
       if (!pacienteExiste) {
          return res.status(404).json({ error: 'Paciente no encontrado' });
       }
 
       // Verificar si ya está en lista negra
-      const existeEntrada = await ListaNegra.findOne({ paciente });
+      const existeEntrada = await ListaNegra.findOne({ paciente: pacienteId });
       if (existeEntrada) {
          return res.status(400).json({ error: 'El paciente ya está en la lista negra' });
       }
 
+      // ✅ ACTUALIZAR el campo enListaNegra a true
+      await Paciente.findByIdAndUpdate(pacienteId, { enListaNegra: true });
+
       const nuevaEntrada = new ListaNegra({
-         paciente,
+         paciente: pacienteId,
          agregadoPor,
          razon,
          detalles,
          tipo,
-         evidencia: evidencia || []
+         evidencia: evidencia || [],
+         fecha: new Date()
       });
 
       await nuevaEntrada.save();
@@ -44,12 +51,13 @@ exports.agregarAListaNegra = async (req, res) => {
    }
 };
 
+
 // Obtener todas las entradas activas de lista negra
 exports.obtenerListaNegra = async (req, res) => {
    try {
       const lista = await ListaNegra.find({})
-         .populate('paciente', 'nombre apellido telefono')
-         .populate('agregadoPor', 'nombre rol');
+         .populate('paciente', 'nombre apeP apeM telefonoWhatsapp correoElectronico telefonoPaciente',)
+         .populate('agregadoPor', 'usuario tipo');
 
       res.status(200).json({
          count: lista.length,
@@ -71,7 +79,7 @@ exports.obtenerEntradaListaNegra = async (req, res) => {
          .populate('agregadoPor');
 
       if (!entrada) {
-         return res.status(404).json({ error: 'Entrada no encontrada o inactiva' });
+         return res.status(404).json({ error: 'Entrada no encontrada' });
       }
 
       res.status(200).json(entrada);
@@ -116,36 +124,11 @@ exports.actualizarEntradaListaNegra = async (req, res) => {
    }
 };
 
-// Desactivar una entrada (eliminación lógica)
-exports.eliminarEntradaListaNegra = async (req, res) => {
-   try {
-      const entradaEliminada = await ListaNegra.findByIdAndDelete(req.params.id);
-
-      if (!entradaEliminada) {
-         return res.status(404).json({ error: 'Entrada no encontrada' });
-      }
-
-      res.status(200).json({
-         message: 'Entrada eliminada exitosamente',
-         data: entradaEliminada
-      });
-
-
-      res.status(200).json({
-         message: 'Entrada desactivada exitosamente',
-         data: entradaDesactivada
-      });
-   } catch (error) {
-      res.status(500).json({
-         error: 'Error al desactivar entrada',
-         details: error.message
-      });
-   }
-};
 
 // Verificar si un paciente está en lista negra
 exports.verificarPacienteListaNegra = async (req, res) => {
    try {
+      const { pacienteId } = req.params;
       const entrada = await ListaNegra.findOne({ paciente: pacienteId });
       res.status(200).json({
          enListaNegra: !!entrada,
@@ -158,3 +141,87 @@ exports.verificarPacienteListaNegra = async (req, res) => {
       });
    }
 };
+
+exports.buscarPorPacienteId = async (req, res) => {
+   const { pacienteId } = req.params;
+ 
+   try {
+     const registro = await ListaNegra.findOne({ paciente: pacienteId })
+       .populate('agregadoPor', 'usuario tipo'); 
+ 
+     if (!registro) {
+       return res.status(200).json({ enListaNegra: false });
+     }
+ 
+     res.status(200).json({
+       enListaNegra: true,
+       datos: registro
+     });
+   } catch (error) {
+     console.error('Error al buscar en lista negra:', error);
+     res.status(500).json({ mensaje: 'Error al consultar la lista negra' });
+   }
+}
+
+exports.removerDeListaNegra = async (req, res) => {
+   try {
+     const { pacienteId } = req.params;
+ 
+     // Elimina el registro en ListaNegra
+     await ListaNegra.findOneAndDelete({ paciente: pacienteId });
+ 
+     // Actualiza el campo enListaNegra en el paciente
+     await Paciente.findByIdAndUpdate(pacienteId, { enListaNegra: false });
+ 
+     res.status(200).json({ message: 'Paciente removido de la lista negra' });
+   } catch (error) {
+     console.error('Error al remover de lista negra:', error);
+     res.status(500).json({ message: 'Error del servidor' });
+   }
+ };
+
+exports.obtenerListaFiltrada = async (req, res) => {
+   try {
+      const { tipo, orden, search } = req.query;
+      const query = {};
+
+      if (tipo) {
+         query.tipo = tipo;
+      }
+
+      const listaQuery = ListaNegra.find(query).populate('paciente', 'nombre apeP apeM telefonoWhatsapp correoElectronico telefonoPaciente');
+
+      if (search) {
+         const regex = new RegExp(search, 'i');
+         listaQuery = listaQuery.populate({
+            path: 'paciente',
+            match: {
+               $or: [
+                  { nombre: regex },
+                  { apeP: regex },
+                  { apeM: regex },
+                  { telefonoWhatsapp: regex },
+                  { telefonoPaciente: regex }
+               ]
+            },
+            select: 'nombre apeP apeM telefonoWhatsapp correoElectronico telefonoPaciente'
+         });
+      }
+      
+      if (orden === 'asc') {
+         listaQuery = listaQuery.sort({ createdAt: 1 });
+      } else if (orden === 'desc') {
+         listaQuery = listaQuery.sort({ createdAt: -1 });
+      }
+      
+
+      const data = await listaQuery.exec();
+      const filteredData = data.filter(item => item.paciente !== null);
+
+      res.json({ count: filteredData.length, data: filteredData });
+   } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al obtener la lista negra' });
+   }
+};
+

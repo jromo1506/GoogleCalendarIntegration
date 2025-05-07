@@ -89,6 +89,11 @@ const PacienteSchema = new mongoose.Schema({
     idDoctor: {
         type: String,
         required: false
+    },
+    enListaNegra: {
+        type: Boolean,
+        default: false,  
+        required: true
     }
 
 });
