@@ -2,76 +2,63 @@ const moment = require("moment");
 
 const filterSlotsByRules = (availableSlots) => {
   const rules = {
-    martes: { start: "16:00", end: "20:00" },
-    miercoles: { start: "10:00", end: "14:00" },
-    jueves: { start: "16:00", end: "20:00" }
+    martes: { start: "16:00", end: "19:00" },
+    miercoles: { start: "10:00", end: "13:00" },
+    jueves: { start: "16:00", end: "19:00" }
   };
 
   const today = moment();
   const todayName = today.format("dddd").toLowerCase();
-  console.log("Día actual detectado:", todayName);
 
-  // Determinar qué días mostrar según el día actual
-  let showCurrentWeek = [];
-  let showNextWeek = [];
-
-  if (todayName === "monday") {
-    // Lunes: mostrar Jueves de esta semana y Martes de la siguiente
-    showCurrentWeek = ["jueves"];
-    showNextWeek = ["martes"];
-  } else if (todayName === "tuesday") {
-    // Martes: mostrar Martes y Miércoles de la siguiente semana
-    showNextWeek = ["martes", "miercoles"];
-  } else if (todayName === "wednesday") {
-    // Miércoles: mostrar Martes y Miércoles de la siguiente semana
-    showNextWeek = ["martes", "miercoles"];
-  } else if (todayName === "thursday") {
-    // Jueves: mostrar Martes y Miércoles de la siguiente semana
-    showNextWeek = ["martes", "miercoles"];
-  } else if (todayName === "friday") {
-    // Viernes: mostrar Martes y Miércoles de la siguiente semana
-    showNextWeek = ["martes", "miercoles"];
-  } else if (todayName === "saturday") {
-    // Sábado: mostrar Martes y Miércoles de la siguiente semana
-    showNextWeek = ["martes", "miercoles"];
-  } else if (todayName === "sunday") {
-    // Domingo: mostrar Miércoles y Jueves de la siguiente semana
-    showNextWeek = ["miercoles", "jueves"];
-  }
-
-  // Filtrar slots según las reglas
-  const filteredSlots = availableSlots.filter(slot => {
-    const slotDate = moment(slot.date);
-    const isNextWeek = slotDate.isAfter(today.endOf('week'));
+  // Filtrar slots según las reglas horarias
+  const filteredByTime = availableSlots.filter(slot => {
     const dayRules = rules[slot.day];
-    
-    // Verificar si el slot cumple con las reglas horarias
-    const validTime = dayRules && 
-                     slot.start >= dayRules.start && 
-                     slot.end <= dayRules.end;
-    
-    // Verificar si pertenece a la semana que debe mostrarse
-    if (isNextWeek) {
-      return showNextWeek.includes(slot.day) && validTime;
-    } else {
-      return showCurrentWeek.includes(slot.day) && validTime;
-    }
+    return dayRules && 
+           slot.start >= dayRules.start && 
+           slot.end <= dayRules.end;
   });
 
-  return filteredSlots;
+  // Ordenar por fecha y hora
+  const sortedSlots = [...filteredByTime].sort((a, b) => {
+    const dateCompare = new Date(a.date) - new Date(b.date);
+    if (dateCompare !== 0) return dateCompare;
+    return a.start.localeCompare(b.start);
+  });
+
+  // Calcular anticipación requerida
+  const getRequiredDaysAhead = () => {
+    const dayOfWeek = today.day();
+    if (dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) { // viernes, sábado o domingo
+      return 2;
+    }
+    return 2 - (4 - dayOfWeek);
+  };
+
+  const minDate = moment().add(getRequiredDaysAhead(), 'days').startOf('day');
+  const filteredByDate = sortedSlots.filter(slot => 
+    moment(slot.date).isSameOrAfter(minDate)
+  );
+
+  // Seleccionar los 2 días más cercanos con disponibilidad
+  const result = [];
+  const daysFound = new Set();
+  
+  for (const slot of filteredByDate) {
+    if (!daysFound.has(slot.date)) {
+      result.push(slot);
+      daysFound.add(slot.date);
+      
+      if (result.length >= 2) break;
+    }
+  }
+
+  return result;
 };
 
 const getEarliestSlots = (availableSlots) => {
-  const earliestSlots = {};
-
-  for (const slot of availableSlots) {
-    const { day, start } = slot;
-    if (!earliestSlots[day] || start < earliestSlots[day].start) {
-      earliestSlots[day] = slot;
-    }
-  }
-
-  return Object.values(earliestSlots);
+  return availableSlots;
 };
+
+
 
 module.exports = { filterSlotsByRules, getEarliestSlots };

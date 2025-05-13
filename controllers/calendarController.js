@@ -268,17 +268,13 @@ exports.crearCitaCV = async (req, res) => {
 };
 
 
-const getTwoWeeksRange = () => {
+const getDynamicRange = () => {
   const today = new Date();
   const startOfRange = new Date(today);
-  
-  // Si es domingo, empezamos desde hoy, sino desde el lunes anterior
-  if (today.getDay() !== 0) {
-    startOfRange.setDate(today.getDate() - (today.getDay() - 1));
-  }
+  startOfRange.setDate(today.getDate() - 1); // Incluir desde ayer
   
   const endOfRange = new Date(startOfRange);
-  endOfRange.setDate(startOfRange.getDate() + 13); // 2 semanas completas (14 días)
+  endOfRange.setDate(startOfRange.getDate() + 35); // 5 semanas hacia adelante
 
   return {
     start: startOfRange.toISOString().split("T")[0],
@@ -289,7 +285,7 @@ const getTwoWeeksRange = () => {
 const config = {
   daysOfWeek: [1, 2, 3], // Martes, Miércoles, Jueves
   timeRange: { start: "10:00", end: "20:00" },
-  dateRange: getTwoWeeksRange()  // Nueva función específica para 2 semanas
+  dateRange: getDynamicRange()
 };
 
 const getBusyEvents = async (calendarId, timeMin, timeMax) => {
@@ -306,65 +302,89 @@ const getBusyEvents = async (calendarId, timeMin, timeMax) => {
   }));
 };
 
-
-const incrementTime = (time, incrementMinutes) => {
-  const [hour, minute] = time.split(":").map(Number);
-  const totalMinutes = hour * 60 + minute + incrementMinutes;
-  const newHour = Math.floor(totalMinutes / 60);
-  const newMinute = totalMinutes % 60;
-  return `${newHour.toString().padStart(2, "0")}:${newMinute.toString().padStart(2, "0")}`;
-};
-
-// Función para generar horarios disponibles con bloques de 45 minutos
+// Función para generar horarios disponibles considerando huecos entre citas
 const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) => {
   const { start, end } = dateRange;
   const { start: startTime, end: endTime } = timeRange;
 
   const startDate = new Date(start);
   const endDate = new Date(end);
-  const availableSlots = []; // Cambiar a un array en lugar de un objeto
+  const availableSlots = [];
 
-  const dayNames = ["lunes", "martes", "miercoles", "jueves", "viernes", "sábado","domingo"];
+  const dayNames = ["lunes", "martes", "miercoles", "jueves", "viernes", "sábado", "domingo"];
+  const slotDuration = 45; // Duración de la cita en minutos
+
+  // Ordenar eventos ocupados por fecha y hora
+  const sortedBusyEvents = [...busyEvents].sort((a, b) => 
+    new Date(a.start) - new Date(b.start)
+  );
 
   // Generar fechas en el rango especificado
   for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-    const dayOfWeek = date.getDay(); // Obtener el día de la semana (0-6)
-
-    // Comprobar si el día actual está en el array de días disponibles
+    const dayOfWeek = date.getDay();
+    
     if (daysOfWeek.includes(dayOfWeek)) {
-      const dayName = dayNames[dayOfWeek]; // Nombre del día
+      const dayName = dayNames[dayOfWeek];
       const dateStr = date.toISOString().split("T")[0];
-      let timeCursor = startTime;
+      
+      // Obtener eventos ocupados para este día específico
+      const dayBusyEvents = sortedBusyEvents.filter(event => 
+        event.start.startsWith(dateStr)
+      );
 
-      // Generar bloques horarios de 45 minutos
-      while (timeCursor < endTime) {
-        const nextTime = incrementTime(timeCursor, 45); // Bloques de 45 minutos
-        const slotStart = `${dateStr}T${timeCursor}:00Z`;
-        const slotEnd = `${dateStr}T${nextTime}:00Z`;
-
-        // Verificar si el bloque está ocupado
-        const isBusy = busyEvents.some(event => {
-          const eventStart = event.start;
-          const eventEnd = event.end;
-
-          return (
-            (slotStart >= eventStart && slotStart < eventEnd) || // Comienza dentro del evento
-            (slotEnd > eventStart && slotEnd <= eventEnd) ||    // Termina dentro del evento
-            (slotStart <= eventStart && slotEnd >= eventEnd)    // Envuelve completamente el evento
-          );
-        });
-
-        if (!isBusy) {
-          availableSlots.push({
-            index: availableSlots.length + 1, // Índice numérico
-            day: dayName, // Día de la semana
-            date: dateStr, // Fecha del horario disponible
-            start: timeCursor, // Hora de inicio
-            end: nextTime, // Hora de fin
-          });
+      // Si no hay eventos ocupados, generar todos los slots disponibles
+      if (dayBusyEvents.length === 0) {
+        let timeCursor = startTime;
+        while (timeCursor < endTime) {
+          const nextTime = incrementTime(timeCursor, slotDuration);
+          if (nextTime <= endTime) {
+            availableSlots.push(createSlot(dayName, dateStr, timeCursor, nextTime));
+          }
+          timeCursor = nextTime;
+        }
+      } else {
+        // Verificar huecos antes del primer evento del día
+        const firstEventStart = dayBusyEvents[0].start.split("T")[1].substring(0, 5);
+        if (startTime < firstEventStart) {
+          let timeCursor = startTime;
+          while (timeCursor < firstEventStart) {
+            const nextTime = incrementTime(timeCursor, slotDuration);
+            if (nextTime <= firstEventStart) {
+              availableSlots.push(createSlot(dayName, dateStr, timeCursor, nextTime));
+            }
+            timeCursor = nextTime;
+          }
         }
 
-        timeCursor = nextTime;
+        // Verificar huecos entre eventos
+        for (let i = 0; i < dayBusyEvents.length - 1; i++) {
+          const currentEventEnd = dayBusyEvents[i].end.split("T")[1].substring(0, 5);
+          const nextEventStart = dayBusyEvents[i + 1].start.split("T")[1].substring(0, 5);
+          
+          if (currentEventEnd < nextEventStart) {
+            let timeCursor = currentEventEnd;
+            while (timeCursor < nextEventStart) {
+              const nextTime = incrementTime(timeCursor, slotDuration);
+              if (nextTime <= nextEventStart) {
+                availableSlots.push(createSlot(dayName, dateStr, timeCursor, nextTime));
+              }
+              timeCursor = nextTime;
+            }
+          }
+        }
+
+        // Verificar huecos después del último evento del día
+        const lastEventEnd = dayBusyEvents[dayBusyEvents.length - 1].end.split("T")[1].substring(0, 5);
+        if (lastEventEnd < endTime) {
+          let timeCursor = lastEventEnd;
+          while (timeCursor < endTime) {
+            const nextTime = incrementTime(timeCursor, slotDuration);
+            if (nextTime <= endTime) {
+              availableSlots.push(createSlot(dayName, dateStr, timeCursor, nextTime));
+            }
+            timeCursor = nextTime;
+          }
+        }
       }
     }
   }
@@ -372,13 +392,24 @@ const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) =>
   return availableSlots;
 };
 
+// Función auxiliar para crear un slot
+const createSlot = (dayName, dateStr, start, end) => ({
+  index: 0, // Se actualizará después
+  day: dayName,
+  date: dateStr,
+  start: start,
+  end: end
+});
 
-
-
-
-
-
-
-
-
-
+// Actualizar la función incrementTime para manejar correctamente las horas
+const incrementTime = (time, incrementMinutes) => {
+  const [hourStr, minuteStr] = time.split(":");
+  let hour = parseInt(hourStr, 10);
+  let minute = parseInt(minuteStr, 10);
+  
+  minute += incrementMinutes;
+  hour += Math.floor(minute / 60);
+  minute = minute % 60;
+  
+  return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+};

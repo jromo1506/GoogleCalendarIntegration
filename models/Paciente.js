@@ -41,10 +41,6 @@ const PacienteSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    condicion: {
-        type: String,
-        required: true,
-    },
 
     altura: {
         type: Number,
