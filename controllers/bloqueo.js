@@ -1,7 +1,5 @@
 const { oauth2Client, calendarService } = require('../services/googleAuthService');
 const refreshTokenService = require('../services/refreshTokenService');
-const filtrosDrArceService = require('../services/filtrosDrArceService');
-const Bloqueo = require('../models/Bloqueo');
 const filtros2 =require('../services/filtros2');
 const moment = require('moment');
 
@@ -387,16 +385,72 @@ const generateAvailableSlots = (daysOfWeek, timeRange, dateRange, busyEvents) =>
 
 
 
-const config2 = {
-  daysOfWeek: [1, 2, 3, 4, 5], // Lunes, Martes, Miércoles, Jueves, Viernes
-  timeRange: { start: "10:00", end: "20:00" }, // Horarios de 9 AM a 6 PM
-  dateRange: { start: new Date(), end: moment().add(1, 'month').toDate() }  // Desde hoy hasta el mes siguiente
+exports.bloquearHorario = async (req, res) => {
+  try {
+    const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+    const { calendarId, fechaInicio, fechaFin } = req.body;
+
+    if (!calendarId || !fechaInicio || !fechaFin) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    // Convertimos las fechas de inicio y fin a objetos moment
+    const start = moment(fechaInicio);
+    const end = moment(fechaFin);
+
+    const bloques = [];
+    let bloqueInicio = start;
+
+    // Generar bloques de 45 minutos hasta que se llegue a la hora de fin
+    while (bloqueInicio.isBefore(end)) {
+      const bloqueFin = moment.min(bloqueInicio.clone().add(45, 'minutes'), end);
+
+      bloques.push({
+        summary: 'Horario bloqueado',
+        description: 'Este horario ha sido bloqueado para evitar reservas.',
+        start: {
+          dateTime: bloqueInicio.toISOString(),
+          timeZone: 'America/Mexico_City',
+        },
+        end: {
+          dateTime: bloqueFin.toISOString(),
+          timeZone: 'America/Mexico_City',
+        },
+        transparency: 'opaque',
+      });
+
+      // Avanzamos al siguiente bloque de 45 minutos
+      bloqueInicio = bloqueFin;
+    }
+
+    // Insertar los eventos en Google Calendar
+    for (const evento of bloques) {
+      await calendar.events.insert({
+        calendarId,
+        resource: evento,
+      });
+    }
+
+    res.status(200).json({
+      message: 'Horarios bloqueados con éxito',
+      bloques,
+    });
+  } catch (error) {
+    console.error('Error al bloquear horario:', error);
+    res.status(500).json({ error: 'Error al bloquear el horario' });
+  }
 };
+
+
+
 
 exports.getAllAvailableSlots = async (req, res) => {
    try {
-     const { daysOfWeek, timeRange, dateRange } = config2;  // Usamos la nueva configuración
-
+     const dateRange = {
+       start: new Date(),
+       end: moment().add(1, 'month').toDate()
+     };
+     const { daysOfWeek, timeRange } = config;
      await setAuthCredentials(email);
  
      const calendarId = req.params.calendarId + "@group.calendar.google.com";
@@ -430,51 +484,3 @@ exports.getAllAvailableSlots = async (req, res) => {
      res.status(500).send('Error al obtener horarios disponibles');
    }
  };
-
-
-
-exports.bloquearHorario = async (req, res) => {
-  try {
-    const { fechaInicio, fechaFin, motivo, creadoPorId, creadoPorNombre } = req.body;
-
-    if (!fechaInicio || !fechaFin || !creadoPorId || !creadoPorNombre) {
-      return res.status(400).json({ error: 'Faltan datos obligatorios' });
-    }
-
-    // Guardar bloqueo en la base de datos
-    const bloqueo = new Bloqueo({
-      fechaInicio,
-      fechaFin,
-      motivo,
-      creadoPorId,
-      creadoPorNombre,
-    });
-
-    await bloqueo.save();
-
-    // Crear evento de bloqueo en Google Calendar
-    const event = {
-      summary: `Bloqueo: ${motivo || 'Sin motivo'}`,
-      description: `Bloqueado por ${creadoPorNombre}` + (motivo ? ` - ${motivo}` : ''),
-      start: {
-        dateTime: new Date(fechaInicio).toISOString(),
-        timeZone: 'America/Mexico_City',
-      },
-      end: {
-        dateTime: new Date(fechaFin).toISOString(),
-        timeZone: 'America/Mexico_City',
-      },
-      transparency: 'opaque', // Evento que bloquea el calendario
-    };
-
-    await calendarService.events.insert({
-      calendarId,
-      resource: event,
-    });
-
-    res.status(201).json({ message: 'Bloqueo creado y evento agregado en Google Calendar' });
-  } catch (error) {
-    console.error('Error en bloquearHorario:', error);
-    res.status(500).json({ error: 'Error al crear bloqueo' });
-  }
-};

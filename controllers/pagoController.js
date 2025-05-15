@@ -272,8 +272,8 @@ exports.verificarEstadoPago = async (req, res) => {
                     line_items: [{ price: precio.id, quantity: 1 }],
                     mode: 'payment',
                     expires_at: Math.floor(limitePago.getTime() / 1000),
-                    success_url: 'https://example.com/success',
-                    cancel_url: 'https://example.com/cancel',
+                        success_url: process.env.PAYMENT_FRONT_URL,
+                        cancel_url: process.env.CANCEL_FRONT_URL,
                     metadata: {
                         pacienteId: pacienteId.toString()
                     }
