@@ -37,6 +37,8 @@ router.get('/getCitas/:calendarId', calendarController.obtenerCitasDeCalendarioP
 router.post('/crearEvento/:calendarId', calendarController.crearEvento);
 router.get('/getAvailableSlots/:calendarId',calendarController.getAvailableSlots);
 router.post('/crearCitaCV/:calendarId1/:calendarId2',calendarController.crearCitaCV)
+router.get('/getAllAvailableSlots/:calendarId/available', calendarController.getAllAvailableSlots);
+router.post('calendar/bloqueo', calendarController.bloquearHorario);
 
 router.post('/user/', usuarioController.crearUsuario);
 router.post('/userAuth', usuarioController.autenticarUsuario);

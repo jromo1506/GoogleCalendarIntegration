@@ -1,15 +1,31 @@
 const Paciente = require('../models/Paciente');
+const Usuario = require('../models/Usuario');
 
-// Dar de alta un paciente
 exports.crearPaciente = async (req, res) => {
     try {
         const nuevoPaciente = new Paciente(req.body);
         const pacienteGuardado = await nuevoPaciente.save();
+
+        // Buscar usuarios con rol 'Administrador' o 'Recepcionista'
+        const usuarios = await Usuario.find({
+            tipo: { $in: ['Administrador', 'Recepcionista'] }
+        });
+
+        // Agregar el nuevo paciente a su lista de idPacientes
+        await Promise.all(usuarios.map(usuario => {
+            if (!usuario.idPacientes.includes(pacienteGuardado._id)) {
+                usuario.idPacientes.push(pacienteGuardado._id);
+                return usuario.save();
+            }
+        }));
+
         res.status(201).json(pacienteGuardado);
     } catch (error) {
+        console.error('Error al crear paciente:', error);
         res.status(500).json({ mensaje: 'Error al dar de alta al paciente', error });
     }
 };
+
 
 // Obtener todos los pacientes
 exports.obtenerPacientes = async (req, res) => {

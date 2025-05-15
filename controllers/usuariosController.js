@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const Usuario = require('../models/Usuario');
+const Pacientes = require('../models/Paciente')
 
 
 exports.crearUsuario = async (req, res) => {
@@ -25,8 +26,16 @@ exports.crearUsuario = async (req, res) => {
         
 
         const usuarioGuardado = await nuevoUsuario.save();
+        //si se crea admin o recepcionista se le añaden los Id del paciente
+        if(['Administrador', 'Recepcionista'].includes(usuarioGuardado.tipo)){
+            const pacientes = await Pacientes.find({}, '_id');
+            const idsPacientes = pacientes.map(p => p._id);
+            usuarioGuardado.idPacientes = idsPacientes;
+            await usuarioGuardado.save();
+        }
         res.status(201).json(usuarioGuardado);
     } catch (error) {
+        console.error('Error al crear el usuario:', error);
         res.status(500).json({ message: 'Error al crear el usuario', error });
     }
 };
