@@ -7,10 +7,10 @@ const filterSlotsByRules = (availableSlots) => {
     jueves: { start: "16:00", end: "19:00" }
   };
 
-  const today = moment();
-  const todayName = today.format("dddd").toLowerCase();
+  const now = moment();
+  const todayName = now.format("dddd").toLowerCase();
 
-  // Filtrar slots según las reglas horarias
+  // 1. Filtrar slots según las reglas horarias específicas de cada día
   const filteredByTime = availableSlots.filter(slot => {
     const dayRules = rules[slot.day];
     return dayRules && 
@@ -18,35 +18,28 @@ const filterSlotsByRules = (availableSlots) => {
            slot.end <= dayRules.end;
   });
 
-  // Ordenar por fecha y hora
+  // 2. Ordenar por fecha y hora (más cercanos primero)
   const sortedSlots = [...filteredByTime].sort((a, b) => {
     const dateCompare = new Date(a.date) - new Date(b.date);
     if (dateCompare !== 0) return dateCompare;
     return a.start.localeCompare(b.start);
   });
 
-  // Calcular anticipación requerida
-  const getRequiredDaysAhead = () => {
-    const dayOfWeek = today.day();
-    if (dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) { // viernes, sábado o domingo
-      return 2;
-    }
-    return 2 - (4 - dayOfWeek);
-  };
+  // 3. Filtrar por anticipación mínima de 48 horas
+  const filteredByAnticipation = sortedSlots.filter(slot => {
+    const slotDateTime = moment(`${slot.date}T${slot.start}`);
+    const hoursDifference = slotDateTime.diff(now, 'hours');
+    return hoursDifference >= 48;
+  });
 
-  const minDate = moment().add(getRequiredDaysAhead(), 'days').startOf('day');
-  const filteredByDate = sortedSlots.filter(slot => 
-    moment(slot.date).isSameOrAfter(minDate)
-  );
-
-  // Seleccionar los 2 días más cercanos con disponibilidad
+  // 4. Seleccionar los primeros 2 días distintos con disponibilidad
   const result = [];
-  const daysFound = new Set();
+  const datesAdded = new Set();
   
-  for (const slot of filteredByDate) {
-    if (!daysFound.has(slot.date)) {
+  for (const slot of filteredByAnticipation) {
+    if (!datesAdded.has(slot.date)) {
       result.push(slot);
-      daysFound.add(slot.date);
+      datesAdded.add(slot.date);
       
       if (result.length >= 2) break;
     }
@@ -58,7 +51,5 @@ const filterSlotsByRules = (availableSlots) => {
 const getEarliestSlots = (availableSlots) => {
   return availableSlots;
 };
-
-
 
 module.exports = { filterSlotsByRules, getEarliestSlots };

@@ -233,8 +233,16 @@ exports.addMensajeDoctor = async (req, res) => {
 
         const numeroPaciente = paciente.telefonoPaciente;
 
-        // Enviar el mensaje a WhatsApp
-        await enviarMensajeWhatsApp(numeroPaciente, mensaje);
+        // Obtener el nombre del doctor
+        const doctor = await Usuario.findById(idDoctor);
+        if (!doctor) {
+            return res.status(404).json({ mensaje: 'Doctor no encontrado' });
+        }
+
+        const nombreDoctor = doctor.nombre; // Asumiendo que el modelo Usuario tiene un campo 'nombre'
+
+        // Enviar el mensaje a WhatsApp con el nombre del doctor
+        await enviarMensajeWhatsApp(numeroPaciente, nombreDoctor, mensaje);
 
         res.status(201).json(mensajeGuardado);
     } catch (error) {
