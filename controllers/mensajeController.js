@@ -4,13 +4,14 @@ const Usuario = require('../models/Usuario'); // Asegúrate de que esta línea e
 const Mensaje = require('../models/Mensaje');
 const MensajeDoctor = require('../models/MensajeDoctor');
 const { enviarMensajeWhatsApp } = require('../services/plantillasService');
-
+const{getIO}= require('../services/soket')
 
 // Crear un nuevo mensaje
 exports.addMensaje = async (req, res) => {
     try {
         const mensaje = new Mensajes(req.body);
         const mensajeGuardado = await mensaje.save();
+        notificarNuevoMensaje(mensajeGuardado);
 
         // No tiene sentido este chequeo, porque si `save()` falla, lanzará un error
         res.status(201).json(mensajeGuardado);
@@ -314,3 +315,7 @@ exports.actualizarEstadoMensaje = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
+function notificarNuevoMensaje(mensaje) {
+  const io = getIO();
+  io.emit('nuevo-mensaje', mensaje);
+}

@@ -44,14 +44,17 @@ const PacienteSchema = new mongoose.Schema({
 
     altura: {
         type: Number,
+        default: '' ,
         required: false,
     },
     peso: {
         type: Number,
+        default: '' ,
         required: false,
     },
     direccion: {
         type: String,
+        default: '' ,
         required: false
     },
 

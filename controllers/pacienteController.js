@@ -163,3 +163,29 @@ exports.verificarPacienteEnListaNegra = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al verificar el estado en lista negra' });
     }
 };
+
+exports.actualizarPaciente2 = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const datosActualizados = req.body;
+
+    // Limpieza: elimina campos null o undefined del body
+    const camposValidos = {};
+    for (const key in datosActualizados) {
+      if (datosActualizados[key] !== null && datosActualizados[key] !== undefined) {
+        camposValidos[key] = datosActualizados[key];
+      }
+    }
+
+    const pacienteActualizado = await Paciente.findByIdAndUpdate(id, camposValidos, { new: true });
+
+    if (!pacienteActualizado) {
+      return res.status(404).json({ mensaje: 'Paciente no encontrado' });
+    }
+
+    res.json(pacienteActualizado);
+  } catch (error) {
+    console.error('Error al actualizar paciente:', error);
+    res.status(500).json({ mensaje: 'Error del servidor' });
+  }
+};

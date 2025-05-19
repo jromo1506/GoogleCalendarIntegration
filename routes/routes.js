@@ -40,6 +40,7 @@ router.post('/crearCitaCV/:calendarId1/:calendarId2',calendarController.crearCit
 router.get('/getAllAvailableSlots/:calendarId/available', calendarController.getAllAvailableSlots);
 router.post('calendar/bloqueo', calendarController.bloquearHorario);
 
+
 router.post('/user/', usuarioController.crearUsuario);
 router.post('/userAuth', usuarioController.autenticarUsuario);
 router.get('/user/', usuarioController.obtenerUsuarios);
@@ -61,7 +62,8 @@ router.delete('/citas/:id', citasController.eliminarCita);
 router.post('/paciente', pacienteController.crearPaciente);
 router.get('/pacientes', pacienteController.obtenerPacientes);
 router.get('/paciente/:id', pacienteController.obtenerPacientePorId);
-router.put('/paciente/:id', pacienteController.actualizarPaciente);  
+//router.put('/paciente/:id', pacienteController.actualizarPaciente);  
+router.put('/paciente/:id', pacienteController.actualizarPaciente2);
 router.delete('/paciente/:id', pacienteController.eliminarPaciente);
 router.get('/buscarPacientePorTelefono/:telefono',pacienteController.buscarPacientePorNumeroTelefonico);
 router.post('/addPaciente');
